@@ -111,6 +111,34 @@ function handleAuthClick() {
 }
 
 /**
+ * Force a token refresh
+ * @returns {Promise<boolean>} - Whether the refresh was successful
+ */
+async function refreshToken() {
+    try {
+        console.log('Attempting to refresh token...');
+        return new Promise((resolve) => {
+            // Request a new token
+            tokenClient.requestAccessToken({
+                prompt: '',
+                callback: (response) => {
+                    if (response.error) {
+                        console.error('Error refreshing token:', response.error);
+                        resolve(false);
+                    } else {
+                        console.log('Token refreshed successfully');
+                        resolve(true);
+                    }
+                }
+            });
+        });
+    } catch (error) {
+        console.error('Error during token refresh:', error);
+        return false;
+    }
+}
+
+/**
  * Handle sign-out button click
  */
 function handleSignoutClick() {

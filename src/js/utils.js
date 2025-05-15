@@ -73,9 +73,43 @@ function showSuccess(message, containerId = 'data-table') {
  * @returns {string|null} - Extracted spreadsheet ID
  */
 function extractSpreadsheetId(url) {
-    const regex = /\/d\/([a-zA-Z0-9-_]+)/;
-    const match = url.match(regex);
-    return match ? match[1] : null;
+    if (!url) {
+        console.error('No URL provided to extractSpreadsheetId');
+        return null;
+    }
+    
+    // Try multiple regex patterns to handle different URL formats
+    let match;
+    
+    // Standard format: https://docs.google.com/spreadsheets/d/SPREADSHEET_ID/edit
+    const standardRegex = /\/d\/([a-zA-Z0-9-_]+)/;
+    match = url.match(standardRegex);
+    
+    if (!match) {
+        // Try alternative format where ID might be a query parameter
+        const altRegex = /[?&]id=([a-zA-Z0-9-_]+)/;
+        match = url.match(altRegex);
+    }
+    
+    if (!match) {
+        // Try to see if the whole thing is just an ID
+        const directIdRegex = /^([a-zA-Z0-9-_]{20,})$/;
+        match = url.match(directIdRegex);
+    }
+    
+    const spreadsheetId = match ? match[1] : null;
+    
+    // Validate the ID format - should be alphanumeric with possible dashes/underscores
+    if (spreadsheetId) {
+        console.log(`Successfully extracted spreadsheet ID: ${spreadsheetId}`);
+        if (!/^[a-zA-Z0-9-_]+$/.test(spreadsheetId)) {
+            console.warn('Extracted spreadsheet ID may be invalid:', spreadsheetId);
+        }
+    } else {
+        console.error('Failed to extract spreadsheet ID from URL:', url);
+    }
+    
+    return spreadsheetId;
 }
 
 /**

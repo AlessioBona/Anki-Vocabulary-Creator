@@ -3,12 +3,30 @@
  */
 async function fetchSheetNames() {
     try {
+        console.log('Fetching sheet names for spreadsheet ID:', appState.spreadsheetId);
+        
         const response = await gapi.client.sheets.spreadsheets.get({
             spreadsheetId: appState.spreadsheetId
         });
         
+        // Check if we have a valid response
+        if (!response || !response.result) {
+            const errorMsg = 'Invalid response from Google Sheets API';
+            console.error(errorMsg, response);
+            showError(errorMsg);
+            return;
+        }
+        
         const sheets = response.result.sheets;
+        if (!sheets || !Array.isArray(sheets)) {
+            const errorMsg = 'No sheets found in the spreadsheet';
+            console.error(errorMsg, response.result);
+            showError(errorMsg);
+            return;
+        }
+        
         const sheetNames = sheets.map(sheet => sheet.properties.title);
+        console.log('Found sheet names:', sheetNames);
         
         const sheetSelector = document.getElementById('sheet-selector');
         sheetSelector.innerHTML = '';
@@ -22,7 +40,17 @@ async function fetchSheetNames() {
         
         document.getElementById('sheet-info').classList.remove('hidden');
     } catch (error) {
-        showError('Failed to fetch sheet names: ' + error.message);
+        // Get detailed error information
+        let errorMessage = 'Failed to fetch sheet names: ' + error.message;
+        
+        // Check for Google API specific error format
+        if (error.result && error.result.error) {
+            const apiError = error.result.error;
+            errorMessage = `Google Sheets API error (${apiError.code}): ${apiError.message}`;
+            console.error('Google API Error Details:', apiError);
+        }
+        
+        showError(errorMessage);
         console.error('Error fetching sheet names:', error);
     }
 }
@@ -33,10 +61,30 @@ async function fetchSheetNames() {
  */
 async function fetchSheetData(sheetName) {
     try {
+        console.log(`Fetching data from sheet "${sheetName}" with spreadsheet ID: ${appState.spreadsheetId}`);
+        
+        // Check token validity first
+        const token = gapi.client.getToken();
+        if (!token) {
+            console.warn('No valid token found, attempting to re-authenticate...');
+            showError('Authentication token missing. Please sign in again.');
+            // Reset auth state and prompt for sign-in
+            updateUIForAuth(false);
+            return;
+        }
+        
         const response = await gapi.client.sheets.spreadsheets.values.get({
             spreadsheetId: appState.spreadsheetId,
             range: sheetName
         });
+        
+        // Check if we have a valid response
+        if (!response || !response.result) {
+            const errorMsg = 'Invalid response from Google Sheets API';
+            console.error(errorMsg, response);
+            showError(errorMsg);
+            return;
+        }
         
         const data = response.result.values;
         
@@ -44,6 +92,8 @@ async function fetchSheetData(sheetName) {
             showError('No data found in the sheet');
             return;
         }
+        
+        console.log(`Successfully fetched ${data.length} rows from "${sheetName}"`);
         
         // Validate sheet structure
         const headers = data[0];
@@ -60,8 +110,35 @@ async function fetchSheetData(sheetName) {
             values: data
         };
     } catch (error) {
-        showError('Failed to fetch sheet data: ' + error.message);
+        // Get detailed error information
+        let errorMessage = 'Failed to fetch sheet data: ' + error.message;
+        
+        // Check for Google API specific error format
+        if (error.result && error.result.error) {
+            const apiError = error.result.error;
+            errorMessage = `Google Sheets API error (${apiError.code}): ${apiError.message}`;
+            
+            // Special handling for common errors
+            if (apiError.code === 403) {
+                errorMessage += '. You may not have permission to access this sheet.';
+            } else if (apiError.code === 404) {
+                errorMessage += '. The sheet may not exist or have been deleted.';
+            } else if (apiError.code === 500) {
+                errorMessage += '. Try refreshing the page and signing in again.';
+            }
+            
+            console.error('Google API Error Details:', apiError);
+        }
+        
+        showError(errorMessage);
         console.error('Error fetching sheet data:', error);
+        
+        // If we get a 401 Unauthorized error, the token might be invalid
+        if (error.status === 401) {
+            console.warn('Unauthorized: Token may be invalid. Clearing token and prompting for sign-in.');
+            localStorage.removeItem('googleToken');
+            updateUIForAuth(false);
+        }
     }
 }
 

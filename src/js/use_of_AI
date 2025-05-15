@@ -1,0 +1,18 @@
+I want to use OpenAI Text Models to do some opearations. I'll start describing the first one, so that we can start implement them.
+
+On the cells for "Sentence_01_zh" and "Sentence_02_zh" add a button to regenerate the sentence block.
+"Sentence_01_zh" and "Sentence_02_zh" are sentences in Mandarin Chinese, using a language level HSK3-HSK4, written with simplified characters, that use the corresponding word or expression in the column "word". When the "regenerate" on "Sentence_01_zh" button is clicked, the app should make three API calls to the LLM, to get a new example sentence using that word or expression and substitute the old one, then send a second API call to get the transliteration in pinyin of the new sentence, to be put in Sentence_01_py in the same row, and then another API call to get the translation to English to be put in Sentence_01_en in the same row.
+Same thing for Sentence_02_zh and the two corresponding cells.
+
+On the cell "word" instead add a "regenerate word" button to regenerate the "pronunciation" and "translation" cell, that are the transliteration in pinyin and the translation to English of the chinese word in the "word" cell.
+
+On the bottom, after "filter rows" I want a "create sentences" button that triggers a function, that do this:
+for every row showed at the moment, and only for those rows, trigger the "regenerate word" function, and then the "regenerate sentence" functions for sentence 01 and sentence 02, to populate the row.
+Pay attention to the order of the API calls and to wait for the previous call to be done before you trigger the next.
+
+Next to "create sentences" add a button to "generate audio files", that do this:
+for every row showed at the moment, and only for those rows,
+1) make an API call to the TTS for every Sentence_**_zh (the sentences in chinese)
+2) save it as mp3 with a safe filename based on the word translation in english (doesn't have to correspond one to one) and 5 random numbers to avoid risk of future duplication
+3) add the name of the file to the corresponding Audio_Sentence_** in the row
+4) download all the created mp3s as a zip file

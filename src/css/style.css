@@ -300,6 +300,46 @@ textarea {
     cursor: not-allowed;
 }
 
+/* Regenerate button styling */
+.regenerate-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    font-size: 15px;
+    border-radius: 50%;
+    background-color: #fbbc05; /* Google yellow */
+    color: white;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+.regenerate-btn:hover {
+    background-color: #f9a825; /* Darker yellow */
+    transform: rotate(30deg);
+    transition: transform 0.3s ease;
+}
+
+.regenerate-btn:disabled {
+    background-color: #cccccc;
+    cursor: wait;
+    transform: none;
+}
+
+/* Create sentences button */
+.create-sentences-btn {
+    background-color: #34a853; /* Google green */
+    margin-right: 10px;
+}
+
+.create-sentences-btn:hover {
+    background-color: #2e7d32;
+}
+
 /* Progress bar for batch operations */
 .progress-bar {
     margin: 15px 0;

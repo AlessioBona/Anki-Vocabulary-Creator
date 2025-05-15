@@ -22,12 +22,18 @@ function updateUIForAuth(isAuthorized) {
         document.getElementById('api-section').classList.add('hidden');
         document.getElementById('ai-tools-section').classList.add('hidden');
     }
+    
+    // Refresh the data display if data is available
+    if (isAuthorized && appState.sheetData && appState.sheetData.values) {
+        displayData(appState.sheetData.values);
+    }
 }
 
 /**
  * Load the sheet information
+ * @param {boolean} isRetry - Whether this is a retry attempt after token refresh
  */
-async function loadSheet() {
+async function loadSheet(isRetry = false) {
     try {
         if (!appState.isAuthenticated) {
             showError('Please authenticate first');
@@ -47,18 +53,59 @@ async function loadSheet() {
         localStorage.setItem('sheetUrl', sheetUrl);
         localStorage.setItem('spreadsheetId', appState.spreadsheetId);
         
-        // Fetch sheet names using the API
-        await fetchSheetNames();
+        // Show loading indicator
+        const loadSheetButton = document.getElementById('load-sheet');
+        const originalText = loadSheetButton.textContent;
+        loadSheetButton.disabled = true;
+        loadSheetButton.textContent = 'Loading...';
+        
+        try {
+            // Fetch sheet names using the API
+            await fetchSheetNames();
+        } catch (error) {
+            console.error('Error in loadSheet:', error);
+            
+            // If this is an API error and not a retry attempt yet, try refreshing the token and retrying
+            if (!isRetry && error.result && error.result.error && error.result.error.code >= 401) {
+                console.log('API error encountered. Attempting to refresh token and retry...');
+                const refreshed = await refreshToken();
+                
+                if (refreshed) {
+                    // Reset button and retry
+                    loadSheetButton.disabled = false;
+                    loadSheetButton.textContent = originalText;
+                    return loadSheet(true); // Retry with refreshed token
+                }
+            }
+            
+            // Show error and re-enable button
+            showError('Error loading sheet: ' + (error.message || 'Unknown error'));
+            loadSheetButton.disabled = false;
+            loadSheetButton.textContent = originalText;
+            return;
+        }
+        
+        // Reset button state
+        loadSheetButton.disabled = false;
+        loadSheetButton.textContent = originalText;
     } catch (error) {
         showError('Error loading sheet: ' + error.message);
         console.error('Error loading sheet:', error);
+        
+        // Reset any UI elements that might be in loading state
+        const loadSheetButton = document.getElementById('load-sheet');
+        if (loadSheetButton) {
+            loadSheetButton.disabled = false;
+            loadSheetButton.textContent = 'Load Sheet';
+        }
     }
 }
 
 /**
  * Load data from the selected sheet
+ * @param {boolean} isRetry - Whether this is a retry attempt after token refresh
  */
-async function loadData() {
+async function loadData(isRetry = false) {
     try {
         const sheetSelector = document.getElementById('sheet-selector');
         const selectedSheet = sheetSelector.value;
@@ -68,11 +115,51 @@ async function loadData() {
             return;
         }
         
-        // Fetch sheet data using the API
-        await fetchSheetData(selectedSheet);
+        // Show loading indicator
+        const loadDataButton = document.getElementById('load-data');
+        const originalText = loadDataButton.textContent;
+        loadDataButton.disabled = true;
+        loadDataButton.textContent = 'Loading...';
+        
+        try {
+            // Fetch sheet data using the API
+            await fetchSheetData(selectedSheet);
+        } catch (error) {
+            console.error('Error in loadData:', error);
+            
+            // If this is an API error and not a retry attempt yet, try refreshing the token and retrying
+            if (!isRetry && error.result && error.result.error && error.result.error.code >= 401) {
+                console.log('API error encountered. Attempting to refresh token and retry...');
+                const refreshed = await refreshToken();
+                
+                if (refreshed) {
+                    // Reset button and retry
+                    loadDataButton.disabled = false;
+                    loadDataButton.textContent = originalText;
+                    return loadData(true); // Retry with refreshed token
+                }
+            }
+            
+            // Show error and re-enable button
+            showError('Error loading data: ' + (error.message || 'Unknown error'));
+            loadDataButton.disabled = false;
+            loadDataButton.textContent = originalText;
+            return;
+        }
+        
+        // Reset button state
+        loadDataButton.disabled = false;
+        loadDataButton.textContent = originalText;
     } catch (error) {
         showError('Error loading data: ' + error.message);
         console.error('Error loading data:', error);
+        
+        // Reset any UI elements that might be in loading state
+        const loadDataButton = document.getElementById('load-data');
+        if (loadDataButton) {
+            loadDataButton.disabled = false;
+            loadDataButton.textContent = 'Load Data';
+        }
     }
 }
 
@@ -160,9 +247,12 @@ function saveOpenAIKey() {
     // Show AI tools section
     document.getElementById('ai-tools-section').classList.remove('hidden');
     
-    // If we have sheet data, populate the column selectors
+    // If we have sheet data, populate the column selectors and refresh the display
     if (appState.sheetData && appState.sheetData.values) {
         populateAIToolSelectors();
+        
+        // Refresh the data table to show regeneration buttons
+        displayData(appState.sheetData.values);
     }
 }
 

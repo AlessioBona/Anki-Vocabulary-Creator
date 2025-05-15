@@ -116,8 +116,7 @@ function displayData(data) {
     
     for (let i = 1; i < data.length; i++) {
         const row = document.createElement('tr');
-        
-        data[i].forEach((cellText, index) => {
+          data[i].forEach((cellText, index) => {
             const td = document.createElement('td');
             td.textContent = cellText || '';
             td.dataset.columnIndex = index;
@@ -127,6 +126,12 @@ function displayData(data) {
             const columnGroup = getColumnGroup(data[0][index]);
             if (columnGroup) {
                 td.classList.add(`group-${columnGroup}`);
+            }
+            
+            // Add regenerate buttons to Chinese sentence cells if sentenceRegenerator is available
+            if (window.sentenceRegenerator && window.openAIAPI && window.openAIAPI.isOpenAIConfigured()) {
+                const columnName = data[0][index];
+                window.sentenceRegenerator.addRegenerateButtonToCell(td, i, index, columnName);
             }
             
             row.appendChild(td);
@@ -173,8 +178,7 @@ function displayData(data) {
     clearFilterButton.textContent = 'Clear Filter';
     clearFilterButton.type = 'button';
     clearFilterButton.addEventListener('click', clearRowFilter);
-    
-    rowFilterForm.appendChild(document.createTextNode('Show rows where '));
+      rowFilterForm.appendChild(document.createTextNode('Show rows where '));
     rowFilterForm.appendChild(selectColumn);
     rowFilterForm.appendChild(document.createTextNode(' '));
     rowFilterForm.appendChild(filterTypeSelect);
@@ -184,6 +188,22 @@ function displayData(data) {
     rowFilterForm.appendChild(clearFilterButton);
     
     rowFilterContainer.appendChild(rowFilterForm);
+    
+    // Add "Create Sentences" button if OpenAI is configured
+    if (window.sentenceRegenerator && window.openAIAPI && window.openAIAPI.isOpenAIConfigured()) {
+        const aiActionsDiv = document.createElement('div');
+        aiActionsDiv.className = 'ai-actions-container';
+        aiActionsDiv.style.marginTop = '15px';
+        
+        const createSentencesBtn = document.createElement('button');
+        createSentencesBtn.textContent = 'Create Sentences';
+        createSentencesBtn.className = 'create-sentences-btn ai-action';
+        createSentencesBtn.addEventListener('click', window.sentenceRegenerator.createSentencesForVisibleRows);
+        
+        aiActionsDiv.appendChild(createSentencesBtn);
+        rowFilterContainer.appendChild(aiActionsDiv);
+    }
+    
     dataTable.appendChild(rowFilterContainer);
     
     // Add save and download buttons
@@ -226,6 +246,12 @@ function toggleColumnVisibility(columnIndex, visible) {
  * @param {number} columnIndex - The column index in the data array
  */
 function makeEditable(cell, rowIndex, columnIndex) {
+    // Save original content without the button
+    const regenerateBtn = cell.querySelector('.regenerate-btn');
+    if (regenerateBtn) {
+        regenerateBtn.remove(); // Temporarily remove button
+    }
+    
     const originalContent = cell.textContent;
     
     // Create an input element
@@ -242,8 +268,14 @@ function makeEditable(cell, rowIndex, columnIndex) {
     // Handle input blur to save changes
     input.addEventListener('blur', () => {
         cell.textContent = input.value;
+        
         // Update the stored data
         appState.sheetData.values[rowIndex][columnIndex] = input.value;
+        
+        // Re-add regenerate button if this cell had one
+        if (regenerateBtn) {
+            cell.appendChild(regenerateBtn);
+        }
     });
     
     // Handle Enter key
@@ -252,6 +284,11 @@ function makeEditable(cell, rowIndex, columnIndex) {
             input.blur();
         } else if (event.key === 'Escape') {
             cell.textContent = originalContent;
+            
+            // Re-add regenerate button if this cell had one
+            if (regenerateBtn) {
+                cell.appendChild(regenerateBtn);
+            }
         }
     });
 }
