@@ -1,115 +1,125 @@
 // Global variables to store authentication and sheet data
-let accessToken = null;
+let isAuthenticated = false;
 let spreadsheetId = null;
 let sheetData = {};
 
+// Client ID from the Google Cloud Console
+const CLIENT_ID = '273823503699-q2qcv5ceopn41bjil0ihuqkjka7puclp.apps.googleusercontent.com';
+
+// API key from the Google Cloud Console - set to null if you don't have one
+const API_KEY = null;
+
+// Discovery doc URL for APIs used by the quickstart
+const DISCOVERY_DOC = 'https://sheets.googleapis.com/$discovery/rest?version=v4';
+
+// Authorization scopes required by the API
+const SCOPES = 'https://www.googleapis.com/auth/spreadsheets';
+
+let tokenClient;
+
 /**
- * Handle the response from Google Identity Services
- * @param {Object} response - Google Identity response object
+ * Initialize the API client and set up event listeners
  */
-function handleCredentialResponse(response) {
+function initializeApp() {
+    document.getElementById('authorize-button').addEventListener('click', handleAuthClick);
+    document.getElementById('signout-button').addEventListener('click', handleSignoutClick);
+    
+    const loadSheetButton = document.getElementById('load-sheet');
+    loadSheetButton.addEventListener('click', loadSheet);
+    
+    const loadDataButton = document.getElementById('load-data');
+    loadDataButton.addEventListener('click', loadData);
+    
+    // Initialize the Google API client
+    gapi.load('client', initializeGapiClient);
+}
+
+/**
+ * Initialize the Google API client library
+ */
+async function initializeGapiClient() {
     try {
-        // Extract the JWT token
-        const credential = response.credential;
-        console.log("Received Google identity token");
+        await gapi.client.init({
+            apiKey: API_KEY,
+            discoveryDocs: [DISCOVERY_DOC],
+        });
         
-        // Load the Google API Client Library
-        loadGapiAndInitialize(credential);
+        // Initialize the Google Identity Services client
+        tokenClient = google.accounts.oauth2.initTokenClient({
+            client_id: CLIENT_ID,
+            scope: SCOPES,
+            callback: '', // defined later
+        });
         
-        // Update UI to show authenticated state
-        document.getElementById('auth-status').textContent = 'Authenticated';
-        document.getElementById('sheet-section').classList.remove('hidden');
+        // Check if we're already authenticated
+        if (gapi.client.getToken() !== null) {
+            updateUIForAuth(true);
+        }
     } catch (error) {
-        showError('Authentication error: ' + error.message);
-        console.error('Authentication error:', error);
+        showError(`Error initializing GAPI client: ${error.message}`);
+        console.error('Error initializing GAPI client:', error);
     }
 }
 
 /**
- * Load the Google API Client Library and initialize it
- * @param {string} credential - The ID token from Google Identity
+ * Handle sign-in button click
  */
-function loadGapiAndInitialize(credential) {
-    // Load gapi script
-    const scriptGapi = document.createElement('script');
-    scriptGapi.src = 'https://apis.google.com/js/api.js';
-    scriptGapi.onload = () => {
-        gapi.load('client', () => {
-            console.log('GAPI client loaded');
-            
-            // Now load the Identity Services for OAuth token
-            const scriptGsi = document.createElement('script');
-            scriptGsi.src = 'https://accounts.google.com/gsi/client';
-            scriptGsi.onload = () => {
-                console.log('GSI client loaded');
-                initializeGoogleAuth(credential);
-            };
-            document.body.appendChild(scriptGsi);
-        });
+function handleAuthClick() {
+    tokenClient.callback = async (resp) => {
+        if (resp.error !== undefined) {
+            showError(`Error authenticating: ${resp.error}`);
+            return;
+        }
+        
+        // Successfully authenticated
+        updateUIForAuth(true);
+        console.log('Authentication successful');
     };
-    document.body.appendChild(scriptGapi);
+
+    if (gapi.client.getToken() === null) {
+        // Prompt the user to select an account
+        tokenClient.requestAccessToken({ prompt: 'consent' });
+    } else {
+        // Skip display of account chooser for an existing session
+        tokenClient.requestAccessToken({ prompt: '' });
+    }
 }
 
 /**
- * Initialize Google authentication and API client
- * @param {string} idToken - The ID token from Google Identity
+ * Handle sign-out button click
  */
-function initializeGoogleAuth(idToken) {
-    // Initialize the tokenClient
-    const tokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: '273823503699-q2qcv5ceopn41bjil0ihuqkjka7puclp.apps.googleusercontent.com',
-        scope: 'https://www.googleapis.com/auth/spreadsheets',
-        callback: (tokenResponse) => {
-            if (tokenResponse && tokenResponse.access_token) {
-                accessToken = tokenResponse.access_token;
-                console.log('OAuth token obtained');
-                
-                // Initialize the gapi client with the access token
-                gapi.client.init({
-                    apiKey: null, // We don't need an API key for authenticated requests
-                    discoveryDocs: ['https://sheets.googleapis.com/$discovery/rest?version=v4'],
-                }).then(() => {
-                    // Set the access token for API requests
-                    gapi.client.setToken({
-                        access_token: accessToken
-                    });
-                    console.log('GAPI client initialized with access token');
-                }).catch(error => {
-                    showError('Failed to initialize API client: ' + error.message);
-                    console.error('Error initializing API client:', error);
-                });
-            }
-        },
-    });
-
-    // Request the access token using the ID token
-    tokenClient.requestAccessToken({ hint: parseJwt(idToken).email });
+function handleSignoutClick() {
+    const token = gapi.client.getToken();
+    if (token !== null) {
+        google.accounts.oauth2.revoke(token.access_token);
+        gapi.client.setToken('');
+        updateUIForAuth(false);
+    }
 }
 
 /**
- * Parse the JWT token to extract relevant information
- * @param {string} token - JWT token
- * @returns {Object} - Decoded token payload
+ * Update UI based on authentication status
+ * @param {boolean} isAuthorized - Whether the user is authorized
  */
-function parseJwt(token) {
-    try {
-        const base64Url = token.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-        }).join(''));
-
-        return JSON.parse(jsonPayload);
-    } catch (error) {
-        console.error('Error parsing JWT:', error);
-        return {};
+function updateUIForAuth(isAuthorized) {
+    isAuthenticated = isAuthorized;
+    
+    document.getElementById('authorize-button').classList.toggle('hidden', isAuthorized);
+    document.getElementById('signout-button').classList.toggle('hidden', !isAuthorized);
+    document.getElementById('auth-status').textContent = isAuthorized ? 'Authenticated' : 'Not authenticated';
+    document.getElementById('sheet-section').classList.toggle('hidden', !isAuthorized);
+    
+    // Hide the data section when signing out
+    if (!isAuthorized) {
+        document.getElementById('data-section').classList.add('hidden');
+        document.getElementById('sheet-info').classList.add('hidden');
     }
 }
 
 /**
  * Extract spreadsheet ID from Google Sheets URL
  * @param {string} url - Google Sheets URL 
- * @returns {string} - Extracted spreadsheet ID
+ * @returns {string|null} - Extracted spreadsheet ID
  */
 function extractSpreadsheetId(url) {
     const regex = /\/d\/([a-zA-Z0-9-_]+)/;
@@ -117,52 +127,53 @@ function extractSpreadsheetId(url) {
     return match ? match[1] : null;
 }
 
-// Event listeners
-document.addEventListener('DOMContentLoaded', () => {
-    const loadSheetButton = document.getElementById('load-sheet');
-    loadSheetButton.addEventListener('click', async () => {
-        try {
-            if (!accessToken) {
-                showError('Please authenticate first');
-                return;
-            }
-            
-            // Get spreadsheet URL from input
-            const sheetUrl = document.getElementById('sheet-url').value;
-            spreadsheetId = extractSpreadsheetId(sheetUrl);
-            
-            if (!spreadsheetId) {
-                showError('Invalid Google Sheets URL');
-                return;
-            }
-            
-            // Fetch sheet names using the API
-            await fetchSheetNames();
-        } catch (error) {
-            showError('Error loading sheet: ' + error.message);
-            console.error('Error loading sheet:', error);
+/**
+ * Load the sheet information
+ */
+async function loadSheet() {
+    try {
+        if (!isAuthenticated) {
+            showError('Please authenticate first');
+            return;
         }
-    });
-    
-    const loadDataButton = document.getElementById('load-data');
-    loadDataButton.addEventListener('click', async () => {
-        try {
-            const sheetSelector = document.getElementById('sheet-selector');
-            const selectedSheet = sheetSelector.value;
-            
-            if (!selectedSheet) {
-                showError('Please select a sheet');
-                return;
-            }
-            
-            // Fetch sheet data using the API
-            await fetchSheetData(selectedSheet);
-        } catch (error) {
-            showError('Error loading data: ' + error.message);
-            console.error('Error loading data:', error);
+        
+        // Get spreadsheet URL from input
+        const sheetUrl = document.getElementById('sheet-url').value;
+        spreadsheetId = extractSpreadsheetId(sheetUrl);
+        
+        if (!spreadsheetId) {
+            showError('Invalid Google Sheets URL');
+            return;
         }
-    });
-});
+        
+        // Fetch sheet names using the API
+        await fetchSheetNames();
+    } catch (error) {
+        showError('Error loading sheet: ' + error.message);
+        console.error('Error loading sheet:', error);
+    }
+}
+
+/**
+ * Load data from the selected sheet
+ */
+async function loadData() {
+    try {
+        const sheetSelector = document.getElementById('sheet-selector');
+        const selectedSheet = sheetSelector.value;
+        
+        if (!selectedSheet) {
+            showError('Please select a sheet');
+            return;
+        }
+        
+        // Fetch sheet data using the API
+        await fetchSheetData(selectedSheet);
+    } catch (error) {
+        showError('Error loading data: ' + error.message);
+        console.error('Error loading data:', error);
+    }
+}
 
 /**
  * Fetch sheet names from Google Sheets API
@@ -505,3 +516,6 @@ function showError(message) {
         errorDiv.classList.add('hidden');
     }, 5000);
 }
+
+// Initialize the app when the page loads
+document.addEventListener('DOMContentLoaded', initializeApp);
