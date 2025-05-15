@@ -39,6 +39,7 @@ button {
     padding: 10px 15px;
     cursor: pointer;
     font-size: 14px;
+    margin-right: 5px;
 }
 
 button:hover {
@@ -57,10 +58,19 @@ button:hover {
     border-radius: 4px;
 }
 
+.success-message {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 4px;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 15px;
+    margin-bottom: 20px;
 }
 
 table, th, td {
@@ -74,4 +84,43 @@ th, td {
 
 th {
     background-color: #f2f2f2;
+}
+
+td:hover {
+    background-color: #f9f9f9;
+}
+
+.filter-container, .row-filter-container {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+}
+
+.checkbox-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    margin-right: 15px;
+}
+
+.checkbox-item input {
+    margin-right: 5px;
+}
+
+.save-button-container {
+    margin-top: 20px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+select {
+    padding: 8px;
+    margin-right: 5px;
 }
