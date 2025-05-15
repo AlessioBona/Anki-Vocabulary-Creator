@@ -174,7 +174,19 @@ function applyRowFilter() {
     
     rows.forEach(row => {
         const cell = row.querySelector(`td[data-column-index="${columnIndex}"]`);
-        const isEmpty = !cell.textContent.trim();
+        // Only consider the text node, ignore button text
+        // Get text content excluding buttons or other child elements
+        let cellText = '';
+        if (cell) {
+            // Iterate through child nodes and only consider direct text nodes
+            for (const node of cell.childNodes) {
+                if (node.nodeType === Node.TEXT_NODE) {
+                    cellText += node.textContent;
+                }
+            }
+            cellText = cellText.trim();
+        }
+        const isEmpty = !cellText;
         
         if (filterType === 'is-empty' && !isEmpty) {
             row.style.display = 'none';
