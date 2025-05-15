@@ -160,3 +160,60 @@ select {
 #authorize-button:hover {
     background-color: #357ae8;
 }
+
+/* Add these styles at the end of your CSS file */
+
+/* Column group styling */
+.group-container {
+    margin-bottom: 15px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.group-toggle {
+    background-color: #f2f2f2;
+    color: #333;
+    border: 1px solid #ddd;
+}
+
+/* Color coding for different column groups */
+.group-basic {
+    border-left: 4px solid #4285f4;
+}
+
+.group-sentence1 {
+    border-left: 4px solid #34a853;
+}
+
+.group-sentence2 {
+    border-left: 4px solid #fbbc05;
+}
+
+th.group-basic, td.group-basic {
+    background-color: rgba(66, 133, 244, 0.05);
+}
+
+th.group-sentence1, td.group-sentence1 {
+    background-color: rgba(52, 168, 83, 0.05);
+}
+
+th.group-sentence2, td.group-sentence2 {
+    background-color: rgba(251, 188, 5, 0.05);
+}
+
+/* Checkbox group styling */
+.checkbox-container .group-basic label {
+    color: #4285f4;
+    font-weight: bold;
+}
+
+.checkbox-container .group-sentence1 label {
+    color: #34a853;
+    font-weight: bold;
+}
+
+.checkbox-container .group-sentence2 label {
+    color: #fbbc05;
+    font-weight: bold;
+}

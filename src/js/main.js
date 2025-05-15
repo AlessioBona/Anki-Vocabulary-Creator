@@ -17,6 +17,32 @@ const SCOPES = 'https://www.googleapis.com/auth/spreadsheets';
 
 let tokenClient;
 
+// Define the expected column structure
+const EXPECTED_COLUMNS = [
+    'Word',
+    'Pronunciation',
+    'Translation',
+    'Sentence_01_zh',
+    'Sentence_01_py',
+    'Sentence_01_en',
+    'Sentence_02_zh',
+    'Sentence_02_py',
+    'Sentence_02_en',
+    'Hanzis',
+    'Sentence_01_audio',
+    'Sentence_02_audio'
+];
+
+// Column groupings for related functionality
+const COLUMN_GROUPS = {
+    basic: ['Word', 'Pronunciation', 'Translation', 'Hanzis'],
+    sentence1: ['Sentence_01_zh', 'Sentence_01_py', 'Sentence_01_en', 'Sentence_01_audio'],
+    sentence2: ['Sentence_02_zh', 'Sentence_02_py', 'Sentence_02_en', 'Sentence_02_audio']
+};
+
+// Column indexes for quick access (to be populated after loading data)
+let columnIndexes = {};
+
 /**
  * Initialize the API client and set up event listeners
  */
@@ -280,16 +306,25 @@ async function fetchSheetData(sheetName) {
         
         const data = response.result.values;
         
-        if (data && data.length > 0) {
-            displayData(data);
-            // Store the data for later use
-            sheetData = {
-                sheetName: sheetName,
-                values: data
-            };
-        } else {
+        if (!data || data.length === 0) {
             showError('No data found in the sheet');
+            return;
         }
+        
+        // Validate sheet structure
+        const headers = data[0];
+        if (!validateSheetStructure(headers)) {
+            return;
+        }
+        
+        // Display data with enhanced column handling
+        displayData(data);
+        
+        // Store the data for later use
+        sheetData = {
+            sheetName: sheetName,
+            values: data
+        };
     } catch (error) {
         showError('Failed to fetch sheet data: ' + error.message);
         console.error('Error fetching sheet data:', error);
@@ -307,18 +342,74 @@ function displayData(data) {
     // Clear existing table
     dataTable.innerHTML = '';
     
-    // Create a container for column filters
+    // Create a container for column filters with column groups
     const filterContainer = document.createElement('div');
     filterContainer.className = 'filter-container';
     filterContainer.innerHTML = '<h3>Column Visibility</h3>';
     
-    // Create checkboxes for each column
+    // Create container for column group checkboxes
+    const groupContainer = document.createElement('div');
+    groupContainer.className = 'group-container';
+    
+    // Create column group toggle buttons
+    Object.entries(COLUMN_GROUPS).forEach(([groupName, columns]) => {
+        const groupButton = document.createElement('button');
+        groupButton.textContent = `Toggle ${groupName.charAt(0).toUpperCase() + groupName.slice(1)}`;
+        groupButton.className = 'group-toggle';
+        groupButton.dataset.group = groupName;
+        
+        groupButton.addEventListener('click', () => {
+            // Check if all columns in this group are visible
+            const columnsInGroup = columns.filter(col => columnIndexes.hasOwnProperty(col));
+            const tableHeaders = document.querySelectorAll('#sheet-data-table th');
+            
+            // Determine if all columns in this group are currently visible
+            const allVisible = columnsInGroup.every(col => {
+                const index = columnIndexes[col];
+                const header = [...tableHeaders].find(th => parseInt(th.dataset.columnIndex) === index);
+                return header && header.style.display !== 'none';
+            });
+            
+            // Toggle visibility of all columns in this group
+            columnsInGroup.forEach(col => {
+                if (columnIndexes.hasOwnProperty(col)) {
+                    const checkbox = document.getElementById(`col-${columnIndexes[col]}`);
+                    if (checkbox) {
+                        checkbox.checked = !allVisible;
+                        toggleColumnVisibility(columnIndexes[col], !allVisible);
+                    }
+                }
+            });
+        });
+        
+        groupContainer.appendChild(groupButton);
+    });
+    
+    filterContainer.appendChild(groupContainer);
+    
+    // Create individual column checkboxes
     const checkboxContainer = document.createElement('div');
     checkboxContainer.className = 'checkbox-container';
+    
+    // Function to determine which group a column belongs to
+    function getColumnGroup(colName) {
+        for (const [group, columns] of Object.entries(COLUMN_GROUPS)) {
+            if (columns.includes(colName)) {
+                return group;
+            }
+        }
+        return null;
+    }
     
     data[0].forEach((header, index) => {
         const checkboxDiv = document.createElement('div');
         checkboxDiv.className = 'checkbox-item';
+        
+        // Add special class if the column belongs to a predefined group
+        const columnGroup = getColumnGroup(header);
+        if (columnGroup) {
+            checkboxDiv.classList.add(`group-${columnGroup}`);
+        }
         
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
@@ -350,6 +441,13 @@ function displayData(data) {
         const th = document.createElement('th');
         th.textContent = headerText;
         th.dataset.columnIndex = index;
+        
+        // Add classes based on column group
+        const columnGroup = getColumnGroup(headerText);
+        if (columnGroup) {
+            th.classList.add(`group-${columnGroup}`);
+        }
+        
         headerRow.appendChild(th);
     });
     
@@ -367,6 +465,13 @@ function displayData(data) {
             td.textContent = cellText || '';
             td.dataset.columnIndex = index;
             td.addEventListener('dblclick', () => makeEditable(td, i, index));
+            
+            // Add classes based on column group
+            const columnGroup = getColumnGroup(data[0][index]);
+            if (columnGroup) {
+                td.classList.add(`group-${columnGroup}`);
+            }
+            
             row.appendChild(td);
         });
         
@@ -563,6 +668,39 @@ async function saveChanges() {
         showError('Error saving changes: ' + error.message);
         console.error('Error saving changes:', error);
     }
+}
+
+/**
+ * Validate sheet columns against expected structure
+ * @param {Array} headers - Array of column headers from the sheet
+ * @returns {boolean} - Whether the sheet has the minimum required columns
+ */
+function validateSheetStructure(headers) {
+    // Reset column indexes
+    columnIndexes = {};
+    
+    // Check for essential columns (Word, Translation)
+    const essentialColumns = ['Word', 'Translation'];
+    const missingEssentials = essentialColumns.filter(col => !headers.includes(col));
+    
+    if (missingEssentials.length > 0) {
+        showError(`Missing essential columns: ${missingEssentials.join(', ')}`);
+        return false;
+    }
+    
+    // Map all found expected columns to their indexes
+    EXPECTED_COLUMNS.forEach(colName => {
+        const index = headers.indexOf(colName);
+        if (index !== -1) {
+            columnIndexes[colName] = index;
+        }
+    });
+    
+    // Log found columns
+    console.log('Found columns:', Object.keys(columnIndexes));
+    console.log('Column indexes:', columnIndexes);
+    
+    return true;
 }
 
 /**
