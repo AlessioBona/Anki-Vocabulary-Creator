@@ -2,11 +2,24 @@
 // This script is loaded after all other JS files
 
 (function() {
+    let mp3Files = []; // Move this outside the function for global access
+
     // Wait for DOM and appState to be ready
     document.addEventListener('DOMContentLoaded', function() {
         const btn = document.getElementById('generate-audio-files');
         if (!btn) return;
         btn.addEventListener('click', handleGenerateAudioFiles);
+
+        const downloadBtn = document.getElementById('download-audio-files');
+        if (downloadBtn) {
+            downloadBtn.addEventListener('click', function() {
+                if (!mp3Files.length) {
+                    alert('No audio files generated yet.');
+                    return;
+                }
+                downloadZip(mp3Files);
+            });
+        }
     });
 
     async function handleGenerateAudioFiles(e) {
@@ -45,7 +58,6 @@
         btn.disabled = true;
         btn.textContent = 'Generating...';
         try {
-            const mp3Files = [];
             for (const rowIdx of visibleRowIndexes) {
                 const row = data[rowIdx];
                 // Sentence 1
@@ -67,8 +79,6 @@
             }
             // Update table UI
             if (window.displayData) displayData(data);
-            // Create ZIP and trigger download
-            await downloadZip(mp3Files);
         } catch (err) {
             alert('Error generating audio: ' + err.message);
         } finally {
