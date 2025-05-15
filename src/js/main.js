@@ -529,17 +529,22 @@ function displayData(data) {
     rowFilterContainer.appendChild(rowFilterForm);
     dataTable.appendChild(rowFilterContainer);
     
-    // Add a save changes button
+    // Add save and download buttons
     const saveButtonContainer = document.createElement('div');
     saveButtonContainer.className = 'save-button-container';
-    
+
     const saveButton = document.createElement('button');
     saveButton.textContent = 'Save Changes';
     saveButton.addEventListener('click', saveChanges);
-    
+
+    const downloadCsvButton = document.createElement('button');
+    downloadCsvButton.textContent = 'Download CSV';
+    downloadCsvButton.classList.add('download-button');
+    downloadCsvButton.addEventListener('click', downloadCsv);
+
     saveButtonContainer.appendChild(saveButton);
+    saveButtonContainer.appendChild(downloadCsvButton);
     dataTable.appendChild(saveButtonContainer);
-    
     dataSection.classList.remove('hidden');
 }
 
@@ -716,6 +721,64 @@ function showError(message) {
     setTimeout(() => {
         errorDiv.classList.add('hidden');
     }, 5000);
+}
+
+/**
+ * Download the current sheet data as a CSV file using Google's export URL
+ */
+function downloadCsv() {
+    try {
+        if (!spreadsheetId || !sheetData.sheetName) {
+            showError('No sheet data to download');
+            return;
+        }
+        
+        // We need to get the sheet's GID (numeric ID) instead of just the name
+        gapi.client.sheets.spreadsheets.get({
+            spreadsheetId: spreadsheetId
+        }).then(response => {
+            const sheets = response.result.sheets;
+            const currentSheet = sheets.find(s => s.properties.title === sheetData.sheetName);
+            
+            if (!currentSheet) {
+                showError('Could not find sheet information');
+                return;
+            }
+            
+            const sheetId = currentSheet.properties.sheetId;
+            
+            // Construct the direct export URL
+            const exportUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=${sheetId}&range=A2:LL`;
+            
+            // Create an invisible link and trigger the download
+            const link = document.createElement('a');
+            link.href = exportUrl;
+            link.setAttribute('download', `${sheetData.sheetName || 'sheet-data'}.csv`);
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Show success message
+            const successMessage = document.createElement('div');
+            successMessage.className = 'success-message';
+            successMessage.textContent = 'CSV file downloaded!';
+            
+            const dataTable = document.getElementById('data-table');
+            dataTable.prepend(successMessage);
+            
+            // Remove the success message after a few seconds
+            setTimeout(() => {
+                successMessage.remove();
+            }, 3000);
+        }).catch(error => {
+            showError('Error getting sheet information: ' + error.message);
+            console.error('Error getting sheet information:', error);
+        });
+    } catch (error) {
+        showError('Error downloading CSV: ' + error.message);
+        console.error('Error downloading CSV:', error);
+    }
 }
 
 // Initialize the app when the page loads
