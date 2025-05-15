@@ -116,9 +116,14 @@ function displayData(data) {
     
     for (let i = 1; i < data.length; i++) {
         const row = document.createElement('tr');
-          data[i].forEach((cellText, index) => {
+        // Use the header row length to determine the number of columns
+        const numColumns = data[0].length;
+
+        for (let index = 0; index < numColumns; index++) {
             const td = document.createElement('td');
-            td.textContent = cellText || '';
+            // Check if the cell data exists, otherwise use empty string
+            const cellText = data[i][index] || '';
+            td.textContent = cellText;
             td.dataset.columnIndex = index;
             td.addEventListener('dblclick', () => makeEditable(td, i, index));
             
@@ -134,8 +139,14 @@ function displayData(data) {
                 window.sentenceRegenerator.addRegenerateButtonToCell(td, i, index, columnName);
             }
             
+            // Add regenerate buttons to Word cells if wordRegenerator is available
+            if (window.wordRegenerator && window.openAIAPI && window.openAIAPI.isOpenAIConfigured()) {
+                const columnName = data[0][index];
+                window.wordRegenerator.addRegenerateButtonToWordCell(td, i, index, columnName);
+            }
+            
             row.appendChild(td);
-        });
+        }
         
         tbody.appendChild(row);
     }

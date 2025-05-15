@@ -330,6 +330,20 @@ textarea {
     transform: none;
 }
 
+/* Word regenerate button styling - differentiates from sentence regeneration */
+.word-regenerate-btn {
+    background-color: #4285f4; /* Google blue */
+}
+
+.word-regenerate-btn:hover {
+    background-color: #3367d6; /* Darker blue */
+}
+
+/* Tool tips for regenerate buttons */
+.regenerate-btn {
+    position: relative;
+}
+
 /* Create sentences button */
 .create-sentences-btn {
     background-color: #34a853; /* Google green */
