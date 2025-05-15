@@ -167,15 +167,18 @@ function updateTableCells(rowIndex, sentencePrefix, content) {
     if (enColumnIndex !== undefined) {
         appState.sheetData.values[rowIndex][enColumnIndex] = content.english;
     }
-      // Update the displayed table cells
+    
+    // Update the displayed table cells
     const table = document.getElementById('sheet-data-table');
-    // In the table, rows are 1-indexed within tbody, but rowIndex is the index in our data array
-    // Our data array includes the header row (rowIndex 0), which is in thead, not tbody
-    // For data rowIndex 1, we want the first row in tbody (index 0, but :nth-child(1))
-    const rowInTable = rowIndex; // Correct because tbody's first row corresponds to data index 1
-    const row = table.querySelector(`tbody tr:nth-child(${rowInTable})`);
+    
+    // IMPORTANT FIX: Since our rowIndex includes the header row (rowIndex 1 = first data row)
+    // but tbody tr:nth-child() starts at 1 for the first row in tbody,
+    // we need to use rowIndex directly as the child selector
+    const row = table.querySelector(`tbody tr:nth-child(${rowIndex})`);
     
     if (row) {
+        console.log(`Updating cells for row ${rowIndex}, ${sentencePrefix}`);
+        
         if (zhColumnIndex !== undefined) {
             const zhCell = row.querySelector(`td[data-column-index="${zhColumnIndex}"]`);
             if (zhCell) {
@@ -185,6 +188,7 @@ function updateTableCells(rowIndex, sentencePrefix, content) {
                 if (button) {
                     zhCell.appendChild(button);
                 }
+                console.log(`Updated Chinese cell: ${content.chinese}`);
             }
         }
         
@@ -192,6 +196,7 @@ function updateTableCells(rowIndex, sentencePrefix, content) {
             const pyCell = row.querySelector(`td[data-column-index="${pyColumnIndex}"]`);
             if (pyCell) {
                 pyCell.textContent = content.pinyin;
+                console.log(`Updated Pinyin cell: ${content.pinyin}`);
             }
         }
         
@@ -199,8 +204,11 @@ function updateTableCells(rowIndex, sentencePrefix, content) {
             const enCell = row.querySelector(`td[data-column-index="${enColumnIndex}"]`);
             if (enCell) {
                 enCell.textContent = content.english;
+                console.log(`Updated English cell: ${content.english}`);
             }
         }
+    } else {
+        console.error(`Row not found for rowIndex ${rowIndex}`);
     }
 }
 
@@ -222,7 +230,14 @@ async function handleRegenerateClick(event, rowIndex, columnIndex) {
         const columnName = headerRow[columnIndex];
         
         // Extract the sentence prefix (Sentence_01 or Sentence_02)
-        const sentencePrefix = columnName.substring(0, 10); // "Sentence_01" or "Sentence_02"
+        const sentencePrefix = columnName.match(/Sentence_0[12]/)?.[0];
+
+        console.log('Regenerating for row:', rowIndex, 'column:', columnIndex, 'prefix:', sentencePrefix);
+
+        if (!sentencePrefix) {
+            showError('Invalid column name for regeneration');
+            return;
+        }
         
         // Get the word from this row
         const wordColumnIndex = appState.columnIndexes['Word'];
@@ -328,11 +343,12 @@ async function createSentencesForVisibleRows() {
         // Process each visible row
         for (let i = 0; i < visibleRows.length; i++) {
             const row = visibleRows[i];            // Get the index of this row in the tbody (0-based index)
-            const rowIndex = i + 1; // Add 1 to match with data array indexing (since header is index 0)
+            // visibleRows[i] is the i-th visible row in the tbody (0-based index)
+            // To convert to our data array index, we add 1 to account for the header row at index 0
+            const dataRowIndex = i + 1;
+
+            if (isNaN(dataRowIndex) || dataRowIndex < 1) continue;
             
-            if (isNaN(rowIndex) || rowIndex < 1) continue;
-            
-            const dataRowIndex = rowIndex; // This is the index in our data array
             const word = appState.sheetData.values[dataRowIndex][wordColumnIndex];
             
             if (!word) continue;
