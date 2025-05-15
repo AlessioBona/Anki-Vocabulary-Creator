@@ -44,7 +44,7 @@
         const idxSentence2 = header.indexOf('Sentence_02_zh');
         const idxAudio1 = header.indexOf('Sentence_01_audio');
         const idxAudio2 = header.indexOf('Sentence_02_audio');
-        const idxEnglish = header.indexOf('Pronunciation');
+        const idxEnglish = header.indexOf('Translation');
         if (idxSentence1 === -1 || idxSentence2 === -1 || idxAudio1 === -1 || idxAudio2 === -1 || idxEnglish === -1) {
             alert('Required columns not found.');
             return;
@@ -147,4 +147,46 @@
             document.head.appendChild(script);
         });
     }
+
+    // Expose mp3Files globally for data-display.js
+    window.mp3Files = mp3Files;
+
+    // Expose a function to regenerate TTS for a single cell (rowIdx, colIdx, filename, td, regenBtn)
+    window.generateTTSForCell = async function(rowIdx, colIdx, filename, td, regenBtn) {
+        const data = appState.sheetData.values;
+        const header = data[0];
+        const row = data[rowIdx];
+        // Determine which sentence column this is
+        let text = null;
+        let model = document.getElementById('tts-model').value.trim();
+        let voice = document.getElementById('tts-voice').value.trim();
+        let instructions = document.getElementById('tts-instructions').value.trim();
+        if (header[colIdx] === 'Sentence_01_audio') {
+            // Find the corresponding Sentence_01_zh column
+            const idxSentence1 = header.indexOf('Sentence_01_zh');
+            text = row[idxSentence1];
+        } else if (header[colIdx] === 'Sentence_02_audio') {
+            const idxSentence2 = header.indexOf('Sentence_02_zh');
+            text = row[idxSentence2];
+        }
+        if (!text) {
+            alert('No sentence text found for this row.');
+            return;
+        }
+        // Regenerate audio
+        try {
+            const newBlob = await generateTTS(text, model, voice, instructions);
+            // Replace in mp3Files (keep same filename)
+            const fileIdx = mp3Files.findIndex(f => f.filename === filename);
+            if (fileIdx !== -1) {
+                mp3Files[fileIdx].blob = newBlob;
+            }
+            // No need to change filename or cell tag
+            // Optionally, flash the cell to indicate update
+            td.style.background = '#e0ffe0';
+            setTimeout(() => { td.style.background = ''; }, 600);
+        } catch (err) {
+            alert('Error regenerating audio: ' + err.message);
+        }
+    };
 })();

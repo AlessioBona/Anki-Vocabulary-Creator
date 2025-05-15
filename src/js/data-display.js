@@ -122,8 +122,7 @@ function displayData(data) {
         for (let index = 0; index < numColumns; index++) {
             const td = document.createElement('td');
             // Check if the cell data exists, otherwise use empty string
-            const cellText = data[i][index] || '';
-            td.textContent = cellText;
+            let cellText = data[i][index] || '';
             td.dataset.columnIndex = index;
             td.addEventListener('dblclick', () => makeEditable(td, i, index));
             
@@ -145,6 +144,46 @@ function displayData(data) {
                 window.wordRegenerator.addRegenerateButtonToWordCell(td, i, index, columnName);
             }
             
+            // Add PLAY/REGENERATE buttons for audio columns if file is in mp3Files
+            const colName = data[0][index];
+            if ((colName === 'Sentence_01_audio' || colName === 'Sentence_02_audio') && window.mp3Files && Array.isArray(window.mp3Files)) {
+                // Extract filename from [sound:filename.mp3]
+                const match = cellText.match(/\[sound:(.+?)\]/);
+                const filename = match ? match[1] : null;
+                const fileObj = filename && window.mp3Files.find(f => f.filename === filename);
+                if (fileObj) {
+                    // PLAY button
+                    const playBtn = document.createElement('button');
+                    playBtn.textContent = '▶';
+                    playBtn.title = 'Play audio';
+                    playBtn.className = 'audio-play-btn';
+                    playBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const url = URL.createObjectURL(fileObj.blob);
+                        const audio = new Audio(url);
+                        audio.play();
+                        audio.onended = () => URL.revokeObjectURL(url);
+                    });
+                    td.appendChild(playBtn);
+                    // REGENERATE button
+                    const regenBtn = document.createElement('button');
+                    regenBtn.textContent = '⟳';
+                    regenBtn.title = 'Regenerate audio';
+                    regenBtn.className = 'audio-regen-btn';
+                    regenBtn.addEventListener('click', async (e) => {
+                        e.stopPropagation();
+                        if (!window.generateTTSForCell) return;
+                        regenBtn.disabled = true;
+                        regenBtn.textContent = '...';
+                        await window.generateTTSForCell(i, index, filename, td, regenBtn);
+                        regenBtn.disabled = false;
+                        regenBtn.textContent = '⟳';
+                    });
+                    td.appendChild(regenBtn);
+                }
+            }
+            // Always show the [sound:filename.mp3] tag as text
+            td.appendChild(document.createTextNode(cellText));
             row.appendChild(td);
         }
         

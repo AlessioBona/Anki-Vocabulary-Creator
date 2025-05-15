@@ -76,6 +76,11 @@
                     <div>
                         <label for="tts-voice"><i class="fas fa-user-voice"></i> Voice:</label>
                         <select id="tts-voice" style="width: 120px;">
+                            <option value="verse">Verse *</option>
+                            <option value="ash">Ash *</option>
+                            <option value="ballad">Ballad *</option>
+                            <option value="coral">Coral *</option>
+                            <option value="sage">Sage *</option>
                             <option value="alloy">Alloy</option>
                             <option value="echo">Echo</option>
                             <option value="fable">Fable</option>
@@ -86,7 +91,7 @@
                     </div>
                     <div style="flex: 1 1 200px;">
                         <label for="tts-instructions"><i class="fas fa-info-circle"></i> Instructions:</label>
-                        <input type="text" id="tts-instructions" placeholder="e.g., Speak clearly and naturally." style="width: 100%;">
+                        <input type="text" id="tts-instructions" placeholder="e.g., Speak clearly and naturally." value="Accent: you are speaking standard Mandarin Chinese.Pacing: Speak Mandarin Chinese very slowly and very clearly, with deliberate pauses between syntagms. Enunciate each word carefully, ensuring clarity in pronunciation. Insert brief pauses between each syntagms to highlight separation. Tone: calm, slowly declaring every part of the sentence." style="width: 100%;">
                     </div>
                     <div>
                         <button id="generate-audio-files" class="ai-action" style="background: #4caf50; color: white;">
