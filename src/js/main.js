@@ -20,12 +20,16 @@ function initializeApp() {
         document.getElementById('sheet-url').value = savedSheetUrl;
     }
     
+    // Restore OpenAI API key if available
+    const savedApiKey = localStorage.getItem('openaiApiKey');
+    if (savedApiKey && window.openAIAPI) {
+        appState.openaiApiKey = savedApiKey;
+        document.getElementById('openai-key').value = savedApiKey;
+    }
+    
     // Initialize the Google API client
     gapi.load('client', initializeGapiClient);
 }
-
-// Initialize the app when the page loads
-document.addEventListener('DOMContentLoaded', initializeApp);
 
 // Initialize the app when the page loads
 document.addEventListener('DOMContentLoaded', initializeApp);

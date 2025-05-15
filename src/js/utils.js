@@ -3,7 +3,9 @@ const appState = {
     isAuthenticated: false,
     spreadsheetId: null,
     sheetData: {},
-    columnIndexes: {}
+    columnIndexes: {},
+    openaiApiKey: null,
+    aiConfigured: false
 };
 
 // Define the expected column structure
@@ -42,6 +44,27 @@ function showError(message) {
     setTimeout(() => {
         errorDiv.classList.add('hidden');
     }, 5000);
+}
+
+/**
+ * Display success message to user
+ * @param {string} message - Success message to display
+ * @param {string} containerId - ID of the container element
+ */
+function showSuccess(message, containerId = 'data-table') {
+    const successMessage = document.createElement('div');
+    successMessage.className = 'success-message';
+    successMessage.textContent = message;
+    
+    const container = document.getElementById(containerId);
+    if (container) {
+        container.prepend(successMessage);
+        
+        // Remove the success message after a few seconds
+        setTimeout(() => {
+            successMessage.remove();
+        }, 3000);
+    }
 }
 
 /**
@@ -100,4 +123,18 @@ function getColumnGroup(colName) {
         }
     }
     return null;
+}
+
+/**
+ * Download a data URL as a file
+ * @param {string} dataUrl - The data URL to download
+ * @param {string} fileName - The name for the downloaded file
+ */
+function downloadDataUrl(dataUrl, fileName) {
+    const link = document.createElement('a');
+    link.href = dataUrl;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }

@@ -35,16 +35,72 @@
             </div>
         </div>
         
+        <div id="api-section" class="hidden">
+            <h2>Step 3: Configure AI Features (Optional)</h2>
+            <div class="form-group">
+                <label for="openai-key">OpenAI API Key:</label>
+                <input type="password" id="openai-key" placeholder="sk-...">
+                <button id="save-openai-key">Save API Key</button>
+                <p class="help-text">Your API key is stored locally in your browser and never sent to any server except OpenAI.</p>
+            </div>
+        </div>
+        
         <div id="data-section" class="hidden">
             <h2>Sheet Data</h2>
             <div id="data-table"></div>
         </div>
         
+        <div id="ai-tools-section" class="hidden">
+            <h2>AI Tools</h2>
+            <div class="ai-tools-container">
+                <div class="ai-tool-card">
+                    <h3>Text Generation</h3>
+                    <div class="form-group">
+                        <label for="gen-source-col">Source Column:</label>
+                        <select id="gen-source-col" disabled></select>
+                        
+                        <label for="gen-target-col">Target Column:</label>
+                        <select id="gen-target-col" disabled></select>
+                        
+                        <label for="gen-template">Prompt Template:</label>
+                        <textarea id="gen-template" rows="3" disabled>Create a translation into English for the Chinese text: "{{Sentence_01_zh}}"</textarea>
+                        
+                        <button id="run-generation" class="ai-action" disabled>Generate Text</button>
+                    </div>
+                </div>
+                
+                <div class="ai-tool-card">
+                    <h3>Speech Generation (TTS)</h3>
+                    <div class="form-group">
+                        <label for="tts-source-col">Text Column:</label>
+                        <select id="tts-source-col" disabled></select>
+                        
+                        <label for="tts-target-col">Output Column:</label>
+                        <select id="tts-target-col" disabled></select>
+                        
+                        <label for="tts-voice">Voice:</label>
+                        <select id="tts-voice" disabled>
+                            <option value="alloy">Alloy</option>
+                            <option value="echo">Echo</option>
+                            <option value="fable">Fable</option>
+                            <option value="onyx">Onyx</option>
+                            <option value="nova">Nova</option>
+                            <option value="shimmer">Shimmer</option>
+                        </select>
+                        
+                        <button id="run-tts" class="ai-action" disabled>Generate Audio</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <div id="error-message" class="hidden"></div>
     </div>
-      <!-- Load modules in specific order -->
+    
+    <!-- Load modules in specific order -->
     <script src="src/js/utils.js"></script>
     <script src="src/js/auth.js"></script>
+    <script src="src/js/apiHandler.js"></script>
     <script src="src/js/sheet-api.js"></script>
     <script src="src/js/data-display.js"></script>
     <script src="src/js/ui-handlers.js"></script>
