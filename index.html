@@ -64,6 +64,34 @@
         
         <div id="data-section" class="hidden">
             <h2><i class="fas fa-table"></i> Sheet Data</h2>
+            <div id="tts-audio-controls" class="card-content" style="margin-bottom: 16px;">
+                <div class="form-group" style="display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end;">
+                    <div>
+                        <label for="tts-model"><i class="fas fa-robot"></i> TTS Model:</label>
+                        <input type="text" id="tts-model" placeholder="e.g., gpt-4o-mini-tts" value="gpt-4o-mini-tts" style="width: 140px;">
+                    </div>
+                    <div>
+                        <label for="tts-voice"><i class="fas fa-user-voice"></i> Voice:</label>
+                        <select id="tts-voice" style="width: 120px;">
+                            <option value="alloy">Alloy</option>
+                            <option value="echo">Echo</option>
+                            <option value="fable">Fable</option>
+                            <option value="onyx">Onyx</option>
+                            <option value="nova">Nova</option>
+                            <option value="shimmer">Shimmer</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1 1 200px;">
+                        <label for="tts-instructions"><i class="fas fa-info-circle"></i> Instructions:</label>
+                        <input type="text" id="tts-instructions" placeholder="e.g., Speak clearly and naturally." style="width: 100%;">
+                    </div>
+                    <div>
+                        <button id="generate-audio-files" class="ai-action" style="background: #4caf50; color: white;">
+                            <i class="fas fa-file-audio"></i> Generate Audio Files
+                        </button>
+                    </div>
+                </div>
+            </div>
             <div id="data-table" class="card-content"></div>
         </div>
         <!-- <div id="ai-tools-section" class="hidden card">
@@ -118,12 +146,15 @@
     </div>
       <!-- Load modules in specific order -->
     <script src="src/js/utils.js"></script>
-    <script src="src/js/auth.js"></script>    <script src="src/js/apiHandler.js"></script>    <script src="src/js/sheet-api.js"></script>
+    <script src="src/js/auth.js"></script>
+    <script src="src/js/apiHandler.js"></script>
+    <script src="src/js/sheet-api.js"></script>
     <script src="src/js/sentence-regenerator.js"></script>
     <script src="src/js/word-regenerator.js"></script>
     <script src="src/js/content-generator.js"></script>
     <script src="src/js/data-display.js"></script>
     <script src="src/js/ui-handlers.js"></script>
     <script src="src/js/main.js"></script>
+    <script src="src/js/audio-generator.js"></script>
 </body>
 </html>

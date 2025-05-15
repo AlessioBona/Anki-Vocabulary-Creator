@@ -131,6 +131,25 @@ async function generateSpeech(text, options = {}) {
 }
 
 /**
+ * Generate TTS audio and return base64-encoded audioContent (for Anki audio generator)
+ * @param {Object} params - {text, model, voice, instructions}
+ * @returns {Promise<{audioContent: string}>} - base64 audioContent
+ */
+async function generateTTS({text, model, voice, instructions}) {
+    // Use generateSpeech to get a Blob
+    const blob = await generateSpeech(text, {model, voice, instructions});
+    // Convert Blob to base64
+    const arrayBuffer = await blob.arrayBuffer();
+    const uint8Array = new Uint8Array(arrayBuffer);
+    let binary = '';
+    for (let i = 0; i < uint8Array.length; i++) {
+        binary += String.fromCharCode(uint8Array[i]);
+    }
+    const base64 = btoa(binary);
+    return { audioContent: base64 };
+}
+
+/**
  * Generate batch audio files for selected rows
  * @param {Array} rows - Array of row data objects 
  * @param {string} textColumn - Column name containing text to convert to speech
@@ -279,5 +298,6 @@ window.openAIAPI = {
     generateText,
     generateSpeech,
     generateBatchAudio,
-    generateContentBatch
+    generateContentBatch,
+    generateTTS // <-- add this for audio-generator.js
 };

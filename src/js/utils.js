@@ -7,6 +7,8 @@ const appState = {
     openaiApiKey: null,
     aiConfigured: false
 };
+window.appState = appState; // Make appState globally accessible
+
 
 // Define the expected column structure
 const EXPECTED_COLUMNS = [

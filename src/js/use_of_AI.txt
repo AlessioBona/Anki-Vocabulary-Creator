@@ -10,10 +10,32 @@ On the bottom, after "filter rows" I want a "create sentences" button that trigg
 for every row showed at the moment, and only for those rows, trigger the "regenerate word" function, and then the "regenerate sentence" functions for sentence 01 and sentence 02, to populate the row.
 Pay attention to the order of the API calls and to wait for the previous call to be done before you trigger the next.
 
-This is a very complex task, so be careful, take your time to think about the implementation and check that you understand correctly and don't break anything.
-Next to "create sentences" add a button to "generate audio files", that does this:
-for every row showed at the moment, and only for those rows,
-1) make an API call to the TTS (in apiHandler.js) for every Sentence_**_zh (the sentences in chinese)
-2) save it as mp3 with a safe filename based on the word translation in English (doesn't have to correspond one to one) and 5 random numbers to avoid risk of future duplication
-3) add the name of the file to the corresponding Audio_Sentence_** in the row
-4) download all the created mp3s as a zip file
+"Generate Audio Files" Feature
+I  want to add a feature to generate audio files for Chinese sentences in your vocabulary app. 
+Requirements:
+
+UI Addition
+Add a "Generate Audio Files" button next to the existing "Create Sentences" button
+Functionality
+Process Only Visible Rows: Only generate audio for rows currently displayed (not filtered out)
+
+For Each Visible Row:
+
+Process Sentence_01_zh first, then Sentence_02_zh
+Use TTS API in apiHandler.js to convert Chinese text to speech
+Use settings from new UI inputs (model, voice, instructions)
+File Handling:
+
+Generate filename based on English word translation + 5 random numbers for uniqueness
+Save TTS response as MP3 file
+Update Audio_Sentence_01 and Audio_Sentence_02 cells with format [sound:filename.mp3] (Anki format)
+Batch Download:
+
+After processing all rows, create a ZIP file with all generated MP3s
+Trigger download of this ZIP file
+Technical Requirements
+Add form fields to index.html for TTS settings (model, voice, instructions)
+Use the TTS functionality in apiHandler.js
+Handle file creation and ZIP packaging in the browser
+Process rows sequentially to avoid overwhelming the API
+This feature would allow users to generate audio pronunciations of their vocabulary sentences and download them in a format ready for import into Anki flashcards.
