@@ -266,11 +266,97 @@ async function saveChanges() {
     }
 }
 
+/**
+ * Regenerate word information for all visible rows
+ * @returns {Promise<void>}
+ */
+async function regenerateWordInfoForVisibleRows() {
+    if (!window.openAIAPI.isOpenAIConfigured()) {
+        showError('OpenAI API key not configured');
+        return;
+    }
+    
+    try {
+        const table = document.getElementById('sheet-data-table');
+        const visibleRows = table.querySelectorAll('tbody tr:not([style*="display: none"])');
+        
+        if (visibleRows.length === 0) {
+            showError('No visible rows to process');
+            return;
+        }
+        
+        // Create progress element
+        const progressElement = document.createElement('div');
+        progressElement.id = 'batch-word-progress';
+        progressElement.className = 'progress-bar';
+        progressElement.innerHTML = `<div class="progress-text">Preparing to process ${visibleRows.length} rows...</div><div class="progress-fill" style="width: 0%"></div>`;
+        document.getElementById('data-table').prepend(progressElement);
+        
+        // Get the Word column index
+        const wordColumnIndex = appState.columnIndexes['Word'];
+        if (wordColumnIndex === undefined) {
+            throw new Error('Cannot find "Word" column');
+        }
+        
+        // Process each visible row
+        for (let i = 0; i < visibleRows.length; i++) {
+            const row = visibleRows[i];
+            const rowIndex = parseInt(row.rowIndex);
+            
+            // Table rows include the header row, so we need to adjust the index
+            // when accessing the data array
+            const dataRowIndex = rowIndex;
+            
+            // Get the word from this row
+            const word = appState.sheetData.values[dataRowIndex][wordColumnIndex];
+            
+            if (!word) continue;
+            
+            // Update progress
+            const percentage = Math.round(((i) / visibleRows.length) * 100);
+            progressElement.innerHTML = `<div class="progress-text">Processing word info for row ${i+1}/${visibleRows.length}</div><div class="progress-fill" style="width: ${percentage}%"></div>`;
+            
+            // Regenerate word info
+            try {
+                const content = await regenerateWordInfo(word);
+                updateWordTableCells(dataRowIndex, content);
+            } catch (error) {
+                console.error(`Error regenerating word info for row ${dataRowIndex}:`, error);
+                // Continue with next row
+            }
+        }
+        
+        // Complete progress
+        progressElement.innerHTML = `<div class="progress-text">Word info regeneration completed for all visible rows!</div><div class="progress-fill" style="width: 100%"></div>`;
+        
+        // Remove progress bar after delay
+        setTimeout(() => {
+            progressElement.remove();
+        }, 3000);
+        
+        // Show success message
+        showSuccess('Word information regeneration completed for all visible rows!');
+        
+        return true; // Signal successful completion
+    } catch (error) {
+        showError(`Error in batch word regeneration: ${error.message}`);
+        
+        // Remove progress element if there's an error
+        const progressElement = document.getElementById('batch-word-progress');
+        if (progressElement) {
+            progressElement.remove();
+        }
+        
+        return false; // Signal failure
+    }
+}
+
 // Export functions for use in other modules
 window.wordRegenerator = {
     addRegenerateButtonToWordCell,
     handleWordRegenerateClick,
     regenerateWordInfo,
     updateWordTableCells,
-    saveChanges  // Exposing this function but not calling it automatically
+    saveChanges,  // Exposing this function but not calling it automatically
+    regenerateWordInfoForVisibleRows
 };

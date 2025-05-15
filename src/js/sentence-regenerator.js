@@ -432,5 +432,7 @@ async function createSentencesForVisibleRows() {
 window.sentenceRegenerator = {
     addRegenerateButtonToCell,
     handleRegenerateClick,
-    createSentencesForVisibleRows
+    createSentencesForVisibleRows,
+    regenerateSentenceBlock,
+    updateTableCells
 };

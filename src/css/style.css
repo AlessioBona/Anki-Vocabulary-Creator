@@ -397,3 +397,40 @@ textarea {
     letter-spacing: 1px;
     font-family: monospace;
 }
+
+/* Additional styling for the AI action buttons */
+.ai-actions-container {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.create-all-content-btn {
+    background-color: #34a853; /* Google green */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.create-all-content-btn:hover {
+    background-color: #2d9249; /* Darker green */
+}
+
+.create-all-content-btn:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+/* Main progress bar styling */
+.main-progress {
+    margin-bottom: 20px;
+    border: 1px solid #34a853; /* Google green */
+}
+
+.main-progress .progress-fill {
+    background-color: #34a853; /* Google green */
+}

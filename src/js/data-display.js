@@ -199,19 +199,29 @@ function displayData(data) {
     rowFilterForm.appendChild(clearFilterButton);
     
     rowFilterContainer.appendChild(rowFilterForm);
-    
-    // Add "Create Sentences" button if OpenAI is configured
-    if (window.sentenceRegenerator && window.openAIAPI && window.openAIAPI.isOpenAIConfigured()) {
+      // Add AI action buttons if OpenAI is configured
+    if (window.openAIAPI && window.openAIAPI.isOpenAIConfigured()) {
         const aiActionsDiv = document.createElement('div');
         aiActionsDiv.className = 'ai-actions-container';
         aiActionsDiv.style.marginTop = '15px';
         
-        const createSentencesBtn = document.createElement('button');
-        createSentencesBtn.textContent = 'Create Sentences';
-        createSentencesBtn.className = 'create-sentences-btn ai-action';
-        createSentencesBtn.addEventListener('click', window.sentenceRegenerator.createSentencesForVisibleRows);
+        if (window.sentenceRegenerator) {
+            const createSentencesBtn = document.createElement('button');
+            createSentencesBtn.textContent = 'Create Sentences';
+            createSentencesBtn.className = 'create-sentences-btn ai-action';
+            createSentencesBtn.addEventListener('click', window.sentenceRegenerator.createSentencesForVisibleRows);
+            aiActionsDiv.appendChild(createSentencesBtn);
+        }
         
-        aiActionsDiv.appendChild(createSentencesBtn);
+        if (window.contentGenerator) {
+            const createAllContentBtn = document.createElement('button');
+            createAllContentBtn.textContent = 'Create All Content';
+            createAllContentBtn.className = 'create-all-content-btn ai-action';
+            createAllContentBtn.title = 'Regenerate word information and sentences for all visible rows';
+            createAllContentBtn.addEventListener('click', window.contentGenerator.regenerateAllContent);
+            aiActionsDiv.appendChild(createAllContentBtn);
+        }
+        
         rowFilterContainer.appendChild(aiActionsDiv);
     }
     
