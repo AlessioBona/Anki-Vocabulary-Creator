@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Anki Vocabulary Creator</title>
     <link rel="stylesheet" href="src/css/style.css">
+    <!-- Load the Google Identity Services library -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
@@ -15,10 +16,20 @@
             <h2>Step 1: Authenticate with Google</h2>
             <div id="g_id_onload"
                 data-client_id="273823503699-q2qcv5ceopn41bjil0ihuqkjka7puclp.apps.googleusercontent.com"
+                data-context="signin"
                 data-callback="handleCredentialResponse"
+                data-auto_select="true"
+                data-itp_support="true"
                 data-scope="https://www.googleapis.com/auth/spreadsheets">
             </div>
-            <div class="g_id_signin" data-type="standard"></div>
+            <div class="g_id_signin"
+                data-type="standard"
+                data-size="large"
+                data-theme="outline"
+                data-text="sign_in_with"
+                data-shape="rectangular"
+                data-logo_alignment="left">
+            </div>
             <div id="auth-status">Not authenticated</div>
         </div>
         

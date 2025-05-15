@@ -3,9 +3,6 @@ let accessToken = null;
 let spreadsheetId = null;
 let sheetData = {};
 
-// Define API scopes needed for the application
-const API_SCOPE = 'https://www.googleapis.com/auth/spreadsheets';
-
 /**
  * Handle the response from Google Identity Services
  * @param {Object} response - Google Identity response object
@@ -16,8 +13,8 @@ function handleCredentialResponse(response) {
         const credential = response.credential;
         console.log("Received Google identity token");
         
-        // We need to load gapi client for Sheets API calls
-        loadGapiClient(credential);
+        // Load the Google API Client Library
+        loadGapiAndInitialize(credential);
         
         // Update UI to show authenticated state
         document.getElementById('auth-status').textContent = 'Authenticated';
@@ -29,35 +26,64 @@ function handleCredentialResponse(response) {
 }
 
 /**
- * Load the Google API Client Library
+ * Load the Google API Client Library and initialize it
  * @param {string} credential - The ID token from Google Identity
  */
-function loadGapiClient(credential) {
-    // Load the Google API Client Library
-    const script = document.createElement('script');
-    script.src = 'https://apis.google.com/js/api.js';
-    script.onload = () => {
-        gapi.load('client', async () => {
-            try {
-                await gapi.client.init({});
-                
-                // Set up the Sheets API with the token
-                await gapi.client.setToken({
-                    access_token: parseJwt(credential).sub
-                });
-                
-                // Load the Sheets API
-                await gapi.client.load('sheets', 'v4');
-                
-                console.log('GAPI client loaded for API');
-                accessToken = credential;
-            } catch (error) {
-                showError('Failed to initialize Google API: ' + error.message);
-                console.error('Error initializing GAPI client:', error);
-            }
+function loadGapiAndInitialize(credential) {
+    // Load gapi script
+    const scriptGapi = document.createElement('script');
+    scriptGapi.src = 'https://apis.google.com/js/api.js';
+    scriptGapi.onload = () => {
+        gapi.load('client', () => {
+            console.log('GAPI client loaded');
+            
+            // Now load the Identity Services for OAuth token
+            const scriptGsi = document.createElement('script');
+            scriptGsi.src = 'https://accounts.google.com/gsi/client';
+            scriptGsi.onload = () => {
+                console.log('GSI client loaded');
+                initializeGoogleAuth(credential);
+            };
+            document.body.appendChild(scriptGsi);
         });
     };
-    document.body.appendChild(script);
+    document.body.appendChild(scriptGapi);
+}
+
+/**
+ * Initialize Google authentication and API client
+ * @param {string} idToken - The ID token from Google Identity
+ */
+function initializeGoogleAuth(idToken) {
+    // Initialize the tokenClient
+    const tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: '273823503699-q2qcv5ceopn41bjil0ihuqkjka7puclp.apps.googleusercontent.com',
+        scope: 'https://www.googleapis.com/auth/spreadsheets',
+        callback: (tokenResponse) => {
+            if (tokenResponse && tokenResponse.access_token) {
+                accessToken = tokenResponse.access_token;
+                console.log('OAuth token obtained');
+                
+                // Initialize the gapi client with the access token
+                gapi.client.init({
+                    apiKey: null, // We don't need an API key for authenticated requests
+                    discoveryDocs: ['https://sheets.googleapis.com/$discovery/rest?version=v4'],
+                }).then(() => {
+                    // Set the access token for API requests
+                    gapi.client.setToken({
+                        access_token: accessToken
+                    });
+                    console.log('GAPI client initialized with access token');
+                }).catch(error => {
+                    showError('Failed to initialize API client: ' + error.message);
+                    console.error('Error initializing API client:', error);
+                });
+            }
+        },
+    });
+
+    // Request the access token using the ID token
+    tokenClient.requestAccessToken({ hint: parseJwt(idToken).email });
 }
 
 /**
