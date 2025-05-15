@@ -6,22 +6,52 @@
 /**
  * Generate a new Chinese sentence using the given word
  * @param {string} word - The Chinese word to include in the sentence
+ * @param {number} rowIndex - The row index in the data table
+ * @param {string} targetSentencePrefix - The prefix of the sentence being generated
  * @returns {Promise<string>} - The generated Chinese sentence
  */
-async function generateChineseSentence(word) {
+async function generateChineseSentence(word, rowIndex, targetSentencePrefix) {
     if (!window.openAIAPI.isOpenAIConfigured()) {
         throw new Error('OpenAI API key not configured');
     }
     
-    const prompt = `Generate a natural-sounding sentence in simplified Chinese (HSK3-HSK4 level) using the word "${word}". 
-                    The sentence should be appropriate for a language learner studying at an intermediate level.
-                    Only provide the sentence in Chinese characters, nothing else.`;
+    // Get existing sentences in this row to avoid duplicates
+    let existingSentences = [];
+    const sentencePrefixes = ['Sentence_01', 'Sentence_02'];
+    
+    // Check all sentence columns including the one we're regenerating
+    sentencePrefixes.forEach(prefix => {
+        const zhColumnName = `${prefix}_zh`;
+        const zhColumnIndex = appState.columnIndexes[zhColumnName];
+        
+        if (zhColumnIndex !== undefined && appState.sheetData.values[rowIndex][zhColumnIndex]) {
+            const sentence = appState.sheetData.values[rowIndex][zhColumnIndex];
+            
+            // For the target sentence, mark it as the current one
+            if (prefix === targetSentencePrefix) {
+                existingSentences.push(`${sentence} (current sentence to replace)`);
+            } else {
+                existingSentences.push(sentence);
+            }
+        }
+    });
+    
+    // Build the prompt with instructions to avoid existing sentences
+    let prompt = `Generate a natural-sounding sentence in simplified Chinese (HSK3-HSK4 level) using the word "${word}". 
+                The sentence should be appropriate for a language learner studying at an intermediate level.`;
+    
+    if (existingSentences.length > 0) {
+        prompt += `\nIMPORTANT: Create a sentence that is DIFFERENT from these existing sentences:
+                ${existingSentences.map((s, i) => `${i+1}. ${s}`).join('\n')}`;
+    }
+    
+    prompt += `\nOnly provide the sentence in Chinese characters, nothing else.`;
     
     try {
         const sentence = await window.openAIAPI.generateText(prompt, {
             model: 'gpt-4-turbo',
-            systemPrompt: 'You are a Chinese language expert. Your responses should be in simplified Chinese characters only.',
-            temperature: 0.7,
+            systemPrompt: 'You are a Chinese language expert. Your responses should be in simplified Chinese characters only. Always create unique, diverse examples when asked for multiple sentences.',
+            temperature: 0.8, // Slightly increased temperature for more variety
             maxTokens: 100
         });
         
@@ -104,8 +134,8 @@ async function regenerateSentenceBlock(word, rowIndex, sentencePrefix) {
         progressElement.innerHTML = `<div class="progress-text">Generating Chinese sentence...</div><div class="progress-fill" style="width: 0%"></div>`;
         document.getElementById('data-table').prepend(progressElement);
         
-        // Step 1: Generate Chinese sentence
-        const chineseSentence = await generateChineseSentence(word);
+        // Step 1: Generate Chinese sentence - pass rowIndex and sentencePrefix to avoid duplicates
+        const chineseSentence = await generateChineseSentence(word, rowIndex, sentencePrefix);
         progressElement.innerHTML = `<div class="progress-text">Generating Pinyin...</div><div class="progress-fill" style="width: 33%"></div>`;
         
         // Step 2: Generate Pinyin
