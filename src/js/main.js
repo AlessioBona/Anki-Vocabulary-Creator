@@ -30,6 +30,12 @@ function initializeApp() {
     const loadDataButton = document.getElementById('load-data');
     loadDataButton.addEventListener('click', loadData);
     
+    // Restore sheet URL from localStorage if available
+    const savedSheetUrl = localStorage.getItem('sheetUrl');
+    if (savedSheetUrl) {
+        document.getElementById('sheet-url').value = savedSheetUrl;
+    }
+    
     // Initialize the Google API client
     gapi.load('client', initializeGapiClient);
 }
@@ -48,12 +54,43 @@ async function initializeGapiClient() {
         tokenClient = google.accounts.oauth2.initTokenClient({
             client_id: CLIENT_ID,
             scope: SCOPES,
-            callback: '', // defined later
+            callback: handleTokenResponse,
         });
         
-        // Check if we're already authenticated
-        if (gapi.client.getToken() !== null) {
-            updateUIForAuth(true);
+        // Try to restore session from localStorage
+        const savedToken = localStorage.getItem('googleToken');
+        if (savedToken) {
+            try {
+                const tokenObject = JSON.parse(savedToken);
+                // Check if token is still valid (not expired)
+                const tokenExpiry = new Date(tokenObject.expiry_date);
+                const now = new Date();
+                
+                if (tokenExpiry > now) {
+                    // Token is still valid
+                    gapi.client.setToken(tokenObject);
+                    updateUIForAuth(true);
+                    console.log('Restored authentication from saved token');
+                    
+                    // If we have a spreadsheet ID saved, try to load it
+                    const savedSpreadsheetId = localStorage.getItem('spreadsheetId');
+                    if (savedSpreadsheetId) {
+                        spreadsheetId = savedSpreadsheetId;
+                        fetchSheetNames().catch(error => {
+                            console.error('Error fetching saved sheet:', error);
+                            // If there's an error, clear the saved data
+                            localStorage.removeItem('spreadsheetId');
+                            localStorage.removeItem('sheetUrl');
+                        });
+                    }
+                } else {
+                    // Token expired, clear it
+                    localStorage.removeItem('googleToken');
+                }
+            } catch (error) {
+                console.error('Error restoring token:', error);
+                localStorage.removeItem('googleToken');
+            }
         }
     } catch (error) {
         showError(`Error initializing GAPI client: ${error.message}`);
@@ -62,20 +99,35 @@ async function initializeGapiClient() {
 }
 
 /**
+ * Handle the token response from OAuth flow
+ * @param {Object} response - The token response
+ */
+function handleTokenResponse(response) {
+    if (response.error !== undefined) {
+        showError(`Error authenticating: ${response.error}`);
+        return;
+    }
+    
+    // Successfully authenticated
+    const token = gapi.client.getToken();
+    if (token) {
+        // Add expiry date if not present
+        if (!token.expiry_date) {
+            // Set expiry to 1 hour from now (typical Google token lifespan)
+            token.expiry_date = new Date().getTime() + 3600000;
+        }
+        // Save token to localStorage
+        localStorage.setItem('googleToken', JSON.stringify(token));
+    }
+    
+    updateUIForAuth(true);
+    console.log('Authentication successful');
+}
+
+/**
  * Handle sign-in button click
  */
 function handleAuthClick() {
-    tokenClient.callback = async (resp) => {
-        if (resp.error !== undefined) {
-            showError(`Error authenticating: ${resp.error}`);
-            return;
-        }
-        
-        // Successfully authenticated
-        updateUIForAuth(true);
-        console.log('Authentication successful');
-    };
-
     if (gapi.client.getToken() === null) {
         // Prompt the user to select an account
         tokenClient.requestAccessToken({ prompt: 'consent' });
@@ -91,9 +143,16 @@ function handleAuthClick() {
 function handleSignoutClick() {
     const token = gapi.client.getToken();
     if (token !== null) {
-        google.accounts.oauth2.revoke(token.access_token);
+        google.accounts.oauth2.revoke(token.access_token, () => {
+            console.log('Token revoked');
+        });
         gapi.client.setToken('');
         updateUIForAuth(false);
+        
+        // Clear saved authentication data
+        localStorage.removeItem('googleToken');
+        localStorage.removeItem('spreadsheetId');
+        localStorage.removeItem('sheetUrl');
     }
 }
 
@@ -145,6 +204,10 @@ async function loadSheet() {
             showError('Invalid Google Sheets URL');
             return;
         }
+        
+        // Save the URL and spreadsheet ID to localStorage
+        localStorage.setItem('sheetUrl', sheetUrl);
+        localStorage.setItem('spreadsheetId', spreadsheetId);
         
         // Fetch sheet names using the API
         await fetchSheetNames();
