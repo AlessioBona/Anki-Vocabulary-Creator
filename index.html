@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Anki Vocabulary Creator</title>
     <link rel="stylesheet" href="src/css/style.css">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Load the Google API Client Library -->
     <script src="https://apis.google.com/js/api.js"></script>
     <!-- Load the Google Identity Services library -->
@@ -13,72 +19,82 @@
 <body>
     <div class="container">
         <h1>Anki Vocabulary Creator</h1>
-        
-        <div id="auth-section">
-            <h2>Step 1: Authenticate with Google</h2>
-            <button id="authorize-button" class="button">Sign in with Google</button>
-            <button id="signout-button" class="button hidden">Sign Out</button>
-            <div id="auth-status">Not authenticated</div>
-        </div>
-        
-        <div id="sheet-section" class="hidden">
-            <h2>Step 2: Access Google Sheet</h2>
-            <div class="form-group">
-                <label for="sheet-url">Google Sheet URL:</label>
-                <input type="text" id="sheet-url" placeholder="https://docs.google.com/spreadsheets/d/...">
-                <button id="load-sheet">Load Sheet</button>
-            </div>
-            <div id="sheet-info" class="hidden">
-                <h3>Available Sheets</h3>
-                <select id="sheet-selector"></select>
-                <button id="load-data">Load Data</button>
+          <div id="auth-section" class="card">
+            <h2><i class="fas fa-lock"></i>Authenticate with Google</h2>
+            <div class="card-content">
+                <button id="authorize-button" class="button"><i class="fab fa-google"></i> Sign in with Google</button>
+                <button id="signout-button" class="button hidden"><i class="fas fa-sign-out-alt"></i> Sign Out</button>
+                <div id="auth-status" class="status-badge"><i class="fas fa-info-circle"></i> Not authenticated</div>
             </div>
         </div>
         
-        <div id="api-section" class="hidden">
-            <h2>Step 3: Configure AI Features (Optional)</h2>
-            <div class="form-group">
-                <label for="openai-key">OpenAI API Key:</label>
-                <input type="password" id="openai-key" placeholder="sk-...">
-                <button id="save-openai-key">Save API Key</button>
-                <p class="help-text">Your API key is stored locally in your browser and never sent to any server except OpenAI.</p>
+        <div id="sheet-section" class="hidden card">
+            <h2><i class="fas fa-table"></i>Access Google Sheet</h2>
+            <div class="card-content">
+                <div class="form-group">
+                    <label for="sheet-url"><i class="fas fa-link"></i> Google Sheet URL:</label>
+                    <div class="input-group">
+                        <input type="text" id="sheet-url" placeholder="https://docs.google.com/spreadsheets/d/...">
+                        <button id="load-sheet"><i class="fas fa-cloud-download-alt"></i> Load Sheet</button>
+                    </div>
+                </div>
+                <div id="sheet-info" class="hidden">
+                    <h3><i class="fas fa-file-spreadsheet"></i> Available Sheets</h3>
+                    <div class="input-group">
+                        <select id="sheet-selector"></select>
+                        <button id="load-data"><i class="fas fa-database"></i> Load Data</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="api-section" class="hidden card">
+            <h2><i class="fas fa-robot"></i>AI Key</h2>
+            <div class="card-content">
+                <div class="form-group">
+                    <label for="openai-key"><i class="fas fa-key"></i> OpenAI API Key:</label>
+                    <div class="input-group">
+                        <input type="password" id="openai-key" placeholder="sk-...">
+                        <button id="save-openai-key"><i class="fas fa-save"></i> Save API Key</button>
+                    </div>
+                    <p class="help-text"><i class="fas fa-shield-alt"></i> Your API key is stored locally in your browser and never sent to any server except OpenAI.</p>
+                </div>
             </div>
         </div>
         
         <div id="data-section" class="hidden">
-            <h2>Sheet Data</h2>
-            <div id="data-table"></div>
+            <h2><i class="fas fa-table"></i> Sheet Data</h2>
+            <div id="data-table" class="card-content"></div>
         </div>
-        
-        <div id="ai-tools-section" class="hidden">
-            <h2>AI Tools</h2>
+        <!-- <div id="ai-tools-section" class="hidden card">
+            <h2><i class="fas fa-brain"></i> AI Tools</h2>
             <div class="ai-tools-container">
                 <div class="ai-tool-card">
-                    <h3>Text Generation</h3>
+                    <h3><i class="fas fa-language"></i> Text Generation</h3>
                     <div class="form-group">
-                        <label for="gen-source-col">Source Column:</label>
+                        <label for="gen-source-col"><i class="fas fa-arrow-right"></i> Source Column:</label>
                         <select id="gen-source-col" disabled></select>
                         
-                        <label for="gen-target-col">Target Column:</label>
+                        <label for="gen-target-col"><i class="fas fa-arrow-left"></i> Target Column:</label>
                         <select id="gen-target-col" disabled></select>
                         
-                        <label for="gen-template">Prompt Template:</label>
+                        <label for="gen-template"><i class="fas fa-edit"></i> Prompt Template:</label>
                         <textarea id="gen-template" rows="3" disabled>Create a translation into English for the Chinese text: "{{Sentence_01_zh}}"</textarea>
                         
-                        <button id="run-generation" class="ai-action" disabled>Generate Text</button>
+                        <button id="run-generation" class="ai-action" disabled><i class="fas fa-cogs"></i> Generate Text</button>
                     </div>
                 </div>
                 
                 <div class="ai-tool-card">
-                    <h3>Speech Generation (TTS)</h3>
+                    <h3><i class="fas fa-microphone-alt"></i> Speech Generation (TTS)</h3>
                     <div class="form-group">
-                        <label for="tts-source-col">Text Column:</label>
+                        <label for="tts-source-col"><i class="fas fa-file-alt"></i> Text Column:</label>
                         <select id="tts-source-col" disabled></select>
                         
-                        <label for="tts-target-col">Output Column:</label>
+                        <label for="tts-target-col"><i class="fas fa-file-audio"></i> Output Column:</label>
                         <select id="tts-target-col" disabled></select>
                         
-                        <label for="tts-voice">Voice:</label>
+                        <label for="tts-voice"><i class="fas fa-user-voice"></i> Voice:</label>
                         <select id="tts-voice" disabled>
                             <option value="alloy">Alloy</option>
                             <option value="echo">Echo</option>
@@ -88,13 +104,17 @@
                             <option value="shimmer">Shimmer</option>
                         </select>
                         
-                        <button id="run-tts" class="ai-action" disabled>Generate Audio</button>
+                        <button id="run-tts" class="ai-action" disabled><i class="fas fa-volume-up"></i> Generate Audio</button>
                     </div>
                 </div>
             </div>
-        </div>
-        
+        </div> -->
         <div id="error-message" class="hidden"></div>
+        
+        <div class="footer">
+            
+            <p><small>Built with <i class="fas fa-heart" style="color:#ea4335"></i> for language learners</small></p>
+        </div>
     </div>
       <!-- Load modules in specific order -->
     <script src="src/js/utils.js"></script>

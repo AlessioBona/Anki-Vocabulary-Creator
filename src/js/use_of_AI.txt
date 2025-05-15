@@ -10,9 +10,10 @@ On the bottom, after "filter rows" I want a "create sentences" button that trigg
 for every row showed at the moment, and only for those rows, trigger the "regenerate word" function, and then the "regenerate sentence" functions for sentence 01 and sentence 02, to populate the row.
 Pay attention to the order of the API calls and to wait for the previous call to be done before you trigger the next.
 
-Next to "create sentences" add a button to "generate audio files", that do this:
+This is a very complex task, so be careful, take your time to think about the implementation and check that you understand correctly and don't break anything.
+Next to "create sentences" add a button to "generate audio files", that does this:
 for every row showed at the moment, and only for those rows,
-1) make an API call to the TTS for every Sentence_**_zh (the sentences in chinese)
-2) save it as mp3 with a safe filename based on the word translation in english (doesn't have to correspond one to one) and 5 random numbers to avoid risk of future duplication
+1) make an API call to the TTS (in apiHandler.js) for every Sentence_**_zh (the sentences in chinese)
+2) save it as mp3 with a safe filename based on the word translation in English (doesn't have to correspond one to one) and 5 random numbers to avoid risk of future duplication
 3) add the name of the file to the corresponding Audio_Sentence_** in the row
 4) download all the created mp3s as a zip file
