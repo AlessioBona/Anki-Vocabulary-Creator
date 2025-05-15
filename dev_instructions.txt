@@ -1,0 +1,41 @@
+
+App Description
+We need a static web application that runs entirely in the browser (no backend server) and allows secure interaction with a private Google Sheet. The app must enable users to:
+
+Authenticate with their Google Account via OAuth 2.0 to access private Google Sheets (read/write).
+
+Paste any Google Sheet URL into an input field. The app will dynamically extract the spreadsheet ID and either let the user select the sheet tab or auto-detect it.
+
+Display all data from the selected sheet in an interactive table.
+
+Allow users to choose which columns to display (show/hide) using checkboxes.
+
+Provide flexible filtering of rows, letting users show only rows where specific cells are empty or not empty.
+
+Edit sheet data in the app and write changes back to the Google Sheet using the Google Sheets API.
+
+No Google Sheet or credentials are hardcoded; all are provided by the user at runtime.
+
+Prepare for future integration with AI and text-to-speech APIs, enabling automatic content generation and batch downloading of generated audio files (to be developed in a later phase).
+
+The UI should be clean and user-friendly, with clear instructions and error handling. All operations (authentication, data fetching, updates) must occur client-side in the browser for privacy and simplicity.
+
+---
+
+// Prompt for GitHub Copilot in VS Code
+
+// Build a static, browser-only web app (no backend) in plain JavaScript, HTML, and CSS that allows the user to:
+
+// 1. **Authenticate with Google** using OAuth 2.0 (client-side flow, Google Identity Services library) to access private Google Sheets (with read/write permissions).
+// 2. **Paste a Google Sheets URL** into an input field. Extract the spreadsheet ID and detect or let the user pick the sheet name.
+// 3. **Display all data from the selected sheet** in an HTML table.
+// 4. **Let the user select which columns to show or hide** via dynamically generated checkboxes for each column.
+// 5. **Let the user filter rows** based on whether specific columns are empty or not (e.g., show only rows where Column X is empty).
+// 6. **Allow editing and writing data back to the sheet** (e.g., in-place cell editing or add row form). Use the Sheets API to persist updates.
+// 7. **Do not hardcode any Google Sheet IDs or API keys**. The Google Sheets URL and OAuth client ID should be configurable (e.g., via inputs or variables).
+// 8. **Include basic UI/UX**: Clear buttons for “Authenticate,” “Load Sheet,” “Apply Filter,” “Save Changes,” etc. Display error messages if authentication fails or if Google API calls fail.
+// 9. **Prepare the code to allow easy integration in the future** with OpenAI APIs (for row content generation) and text-to-speech APIs for audio/MP3 batch downloads (but don’t implement those yet).
+
+// Use only browser-side technologies, no Node.js or server code. Keep code modular and well-documented with comments explaining each function and its purpose.
+
+// Scaffold out index.html, main.js, and style.css as needed.

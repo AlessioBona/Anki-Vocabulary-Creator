@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anki Vocabulary Creator</title>
+    <link rel="stylesheet" href="src/css/style.css">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Anki Vocabulary Creator</h1>
+        
+        <div id="auth-section">
+            <h2>Step 1: Authenticate with Google</h2>
+            <div id="g_id_onload"
+                data-client_id="273823503699-q2qcv5ceopn41bjil0ihuqkjka7puclp.apps.googleusercontent.com"
+                data-callback="handleCredentialResponse">
+            </div>
+            <div class="g_id_signin" data-type="standard"></div>
+            <div id="auth-status">Not authenticated</div>
+        </div>
+        
+        <div id="sheet-section" class="hidden">
+            <h2>Step 2: Access Google Sheet</h2>
+            <div class="form-group">
+                <label for="sheet-url">Google Sheet URL:</label>
+                <input type="text" id="sheet-url" placeholder="https://docs.google.com/spreadsheets/d/...">
+                <button id="load-sheet">Load Sheet</button>
+            </div>
+            <div id="sheet-info" class="hidden">
+                <h3>Available Sheets</h3>
+                <select id="sheet-selector"></select>
+                <button id="load-data">Load Data</button>
+            </div>
+        </div>
+        
+        <div id="data-section" class="hidden">
+            <h2>Sheet Data</h2>
+            <div id="data-table"></div>
+        </div>
+        
+        <div id="error-message" class="hidden"></div>
+    </div>
+    
+    <script src="src/js/main.js"></script>
+</body>
+</html>
