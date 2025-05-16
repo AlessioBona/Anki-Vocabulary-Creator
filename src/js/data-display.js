@@ -247,7 +247,46 @@ function displayData(data) {
     rowFilterForm.appendChild(clearFilterButton);
     
     rowFilterContainer.appendChild(rowFilterForm);
-      // Add AI action buttons if OpenAI is configured
+    
+    // Add row range filtering
+    const rangeFilterDiv = document.createElement('div');
+    rangeFilterDiv.className = 'range-filter';
+    rangeFilterDiv.style.marginTop = '10px';
+
+    const rangeFilterLabel = document.createElement('label');
+    rangeFilterLabel.textContent = 'Row range: ';
+
+    const startRowInput = document.createElement('input');
+    startRowInput.type = 'number';
+    startRowInput.id = 'start-row';
+    startRowInput.min = '1';
+    startRowInput.placeholder = 'From';
+    startRowInput.style.width = '70px';
+
+    const rangeToText = document.createTextNode(' to ');
+
+    const endRowInput = document.createElement('input');
+    endRowInput.type = 'number';
+    endRowInput.id = 'end-row';
+    endRowInput.min = '1';
+    endRowInput.placeholder = 'To';
+    endRowInput.style.width = '70px';
+
+    const applyRangeButton = document.createElement('button');
+    applyRangeButton.textContent = 'Apply Range';
+    applyRangeButton.type = 'button';
+    applyRangeButton.addEventListener('click', applyRowRangeFilter);
+
+    rangeFilterDiv.appendChild(rangeFilterLabel);
+    rangeFilterDiv.appendChild(startRowInput);
+    rangeFilterDiv.appendChild(rangeToText);
+    rangeFilterDiv.appendChild(endRowInput);
+    rangeFilterDiv.appendChild(document.createTextNode(' '));
+    rangeFilterDiv.appendChild(applyRangeButton);
+
+    rowFilterForm.appendChild(rangeFilterDiv);
+    
+    // Add AI action buttons if OpenAI is configured
     if (window.openAIAPI && window.openAIAPI.isOpenAIConfigured()) {
         const aiActionsDiv = document.createElement('div');
         aiActionsDiv.className = 'ai-actions-container';

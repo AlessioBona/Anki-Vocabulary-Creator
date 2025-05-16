@@ -199,8 +199,63 @@ function applyRowFilter() {
 }
 
 /**
- * Clear row filters
+ * Apply row range filter
  */
+function applyRowRangeFilter() {
+    const startRow = parseInt(document.getElementById('start-row').value) || 1;
+    const endRow = parseInt(document.getElementById('end-row').value) || Number.MAX_SAFE_INTEGER;
+    
+    if (startRow < 1) {
+        showError('Start row must be at least 1');
+        return;
+    }
+    
+    if (endRow < startRow) {
+        showError('End row must be greater than or equal to start row');
+        return;
+    }
+    
+    const table = document.getElementById('sheet-data-table');
+    const rows = table.querySelectorAll('tbody tr');
+    
+    // First reset all row visibility from previous range filters
+    // but keep column filters intact
+    const columnIndex = document.getElementById('filter-column')?.value;
+    const filterType = document.getElementById('filter-type')?.value;
+    
+    rows.forEach((row, index) => {
+        // Check if it's hidden by column filter
+        let hiddenByColumnFilter = false;
+        
+        if (columnIndex && filterType) {
+            const cell = row.querySelector(`td[data-column-index="${columnIndex}"]`);
+            let cellText = '';
+            if (cell) {
+                for (const node of cell.childNodes) {
+                    if (node.nodeType === Node.TEXT_NODE) {
+                        cellText += node.textContent;
+                    }
+                }
+                cellText = cellText.trim();
+            }
+            const isEmpty = !cellText;
+            
+            hiddenByColumnFilter = (filterType === 'is-empty' && !isEmpty) || 
+                                  (filterType === 'is-not-empty' && isEmpty);
+        }
+        
+        // Reset visibility first, respecting column filters
+        row.style.display = hiddenByColumnFilter ? 'none' : '';
+        
+        // Then apply range filter
+        const rowNumber = index + 1;
+        if (rowNumber < startRow || rowNumber > endRow) {
+            row.style.display = 'none';
+        }
+    });
+}
+
+// Modify the clearRowFilter function to also reset the range inputs
 function clearRowFilter() {
     const table = document.getElementById('sheet-data-table');
     const rows = table.querySelectorAll('tbody tr');
@@ -208,6 +263,13 @@ function clearRowFilter() {
     rows.forEach(row => {
         row.style.display = '';
     });
+    
+    // Clear range inputs if they exist
+    const startRowInput = document.getElementById('start-row');
+    const endRowInput = document.getElementById('end-row');
+    
+    if (startRowInput) startRowInput.value = '';
+    if (endRowInput) endRowInput.value = '';
 }
 
 /**
@@ -417,3 +479,5 @@ async function runSpeechGeneration() {
         showError(`Error generating audio: ${error.message}`);
     }
 }
+
+window.applyRowRangeFilter = applyRowRangeFilter;
