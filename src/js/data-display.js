@@ -157,6 +157,9 @@ function displayData(data) {
                 td.classList.add(`group-${columnGroup}`);
             }
             
+            // Add text to cell
+            td.appendChild(document.createTextNode(cellText)); 
+
             // Add regenerate buttons to Chinese sentence cells if sentenceRegenerator is available
             if (window.sentenceRegenerator && window.openAIAPI && window.openAIAPI.isOpenAIConfigured()) {
                 const columnName = data[0][index];
@@ -207,8 +210,7 @@ function displayData(data) {
                     td.appendChild(regenBtn);
                 }
             }
-            // Always show the [sound:filename.mp3] tag as text
-            td.appendChild(document.createTextNode(cellText));
+
             row.appendChild(td);
         });
         
@@ -399,13 +401,18 @@ function toggleColumnVisibility(columnIndex, visible) {
  * @param {number} columnIndex - The column index in the data array
  */
 function makeEditable(cell, rowIndex, columnIndex) {
-    // Save original content without the button
-    const regenerateBtn = cell.querySelector('.regenerate-btn');
-    if (regenerateBtn) {
-        regenerateBtn.remove(); // Temporarily remove button
-    }
+    // Save all buttons in the cell
+    const buttons = Array.from(cell.querySelectorAll('button'));
+    const buttonsMap = new Map(); // Store buttons and their parent nodes
     
-    const originalContent = cell.textContent;
+    // Remove and save all buttons
+    buttons.forEach(button => {
+        buttonsMap.set(button, button.parentNode);
+        button.remove();
+    });
+    
+    // Get the text content after removing buttons
+    const originalContent = cell.textContent.trim();
     
     // Create an input element
     const input = document.createElement('input');
@@ -418,6 +425,13 @@ function makeEditable(cell, rowIndex, columnIndex) {
     cell.appendChild(input);
     input.focus();
     
+    // Function to restore all buttons
+    const restoreButtons = () => {
+        buttons.forEach(button => {
+            cell.appendChild(button);
+        });
+    };
+    
     // Handle input blur to save changes
     input.addEventListener('blur', () => {
         cell.textContent = input.value;
@@ -425,10 +439,8 @@ function makeEditable(cell, rowIndex, columnIndex) {
         // Update the stored data
         appState.sheetData.values[rowIndex][columnIndex] = input.value;
         
-        // Re-add regenerate button if this cell had one
-        if (regenerateBtn) {
-            cell.appendChild(regenerateBtn);
-        }
+        // Restore all buttons
+        restoreButtons();
     });
     
     // Handle Enter key
@@ -438,10 +450,8 @@ function makeEditable(cell, rowIndex, columnIndex) {
         } else if (event.key === 'Escape') {
             cell.textContent = originalContent;
             
-            // Re-add regenerate button if this cell had one
-            if (regenerateBtn) {
-                cell.appendChild(regenerateBtn);
-            }
+            // Restore all buttons
+            restoreButtons();
         }
     });
 }
