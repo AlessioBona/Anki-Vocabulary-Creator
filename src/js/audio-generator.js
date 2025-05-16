@@ -2,7 +2,7 @@
 // This script is loaded after all other JS files
 
 (function() {
-    let mp3Files = []; // Move this outside the function for global access
+    let mp3Files = []; // global access
 
     // Wait for DOM and appState to be ready
     document.addEventListener('DOMContentLoaded', function() {
@@ -61,18 +61,44 @@
         try {
             for (const rowIdx of visibleRowIndexes) {
                 const row = data[rowIdx];
+                
                 // Sentence 1
                 const text1 = row[idxSentence1];
                 if (text1) {
-                    const filename1 = makeAudioFilename(row[idxEnglish], 1, prefix);
+                    // Check if there's already a filename in the cell
+                    let filename1;
+                    const existingAudio1 = row[idxAudio1] || '';
+                    const match1 = existingAudio1.match(/\[sound:(.*?)\]/);
+                    
+                    if (match1) {
+                        // Reuse the existing filename
+                        filename1 = match1[1];
+                    } else {
+                        // Generate a new filename
+                        filename1 = makeAudioFilename(row[idxEnglish], 1, prefix);
+                    }
+                    
                     const mp3Blob1 = await generateTTS(text1, model, voice, instructions);
                     mp3Files.push({filename: filename1, blob: mp3Blob1});
                     row[idxAudio1] = `[sound:${filename1}]`;
                 }
+                
                 // Sentence 2
                 const text2 = row[idxSentence2];
                 if (text2) {
-                    const filename2 = makeAudioFilename(row[idxEnglish], 2, prefix);
+                    // Check if there's already a filename in the cell
+                    let filename2;
+                    const existingAudio2 = row[idxAudio2] || '';
+                    const match2 = existingAudio2.match(/\[sound:(.*?)\]/);
+                    
+                    if (match2) {
+                        // Reuse the existing filename
+                        filename2 = match2[1];
+                    } else {
+                        // Generate a new filename
+                        filename2 = makeAudioFilename(row[idxEnglish], 2, prefix);
+                    }
+                    
                     const mp3Blob2 = await generateTTS(text2, model, voice, instructions);
                     mp3Files.push({filename: filename2, blob: mp3Blob2});
                     row[idxAudio2] = `[sound:${filename2}]`;
