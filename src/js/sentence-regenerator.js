@@ -55,7 +55,7 @@ async function generateChineseSentence(word, rowIndex, targetSentencePrefix) {
             maxTokens: 100
         });
         
-        return sentence.trim();
+        return stripOuterQuotes(sentence.trim());
     } catch (error) {
         console.error('Error generating Chinese sentence:', error);
         throw error;
@@ -83,7 +83,7 @@ async function generatePinyin(chineseSentence) {
             maxTokens: 100
         });
         
-        return pinyin.trim();
+        return stripOuterQuotes(pinyin.trim());
     } catch (error) {
         console.error('Error generating pinyin:', error);
         throw error;
@@ -111,7 +111,8 @@ async function generateEnglishTranslation(chineseSentence) {
             maxTokens: 100
         });
         
-        return translation.trim();
+        // Remove outer quotes if present
+        return stripOuterQuotes(translation.trim());
     } catch (error) {
         console.error('Error generating English translation:', error);
         throw error;
@@ -426,6 +427,16 @@ async function createSentencesForVisibleRows() {
             progressElement.remove();
         }
     }
+}
+
+/**
+ * Remove matching leading and trailing quotes (single or double) from a string.
+ * Only removes if both are present and matching.
+ * @param {string} str
+ * @returns {string}
+ */
+function stripOuterQuotes(str) {
+    return str.replace(/^\s*(['"])(.*)\1\s*$/, '$2');
 }
 
 // Export the functions
