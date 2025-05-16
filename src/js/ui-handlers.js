@@ -196,6 +196,10 @@ function applyRowFilter() {
             row.style.display = '';
         }
     });
+    
+    // Save filter state to localStorage
+    localStorage.setItem('filter-column', document.getElementById('filter-column').value);
+    localStorage.setItem('filter-type', document.getElementById('filter-type').value);
 }
 
 /**
@@ -252,6 +256,10 @@ function applyRowRangeFilter() {
             row.style.display = 'none';
         }
     });
+    
+    // Save range filter state to localStorage
+    localStorage.setItem('start-row', document.getElementById('start-row').value);
+    localStorage.setItem('end-row', document.getElementById('end-row').value);
 }
 
 // Modify the clearRowFilter function to also reset the range inputs
@@ -269,6 +277,12 @@ function clearRowFilter() {
     
     if (startRowInput) startRowInput.value = '';
     if (endRowInput) endRowInput.value = '';
+    
+    // Remove filter and range settings from localStorage
+    localStorage.removeItem('filter-column');
+    localStorage.removeItem('filter-type');
+    localStorage.removeItem('start-row');
+    localStorage.removeItem('end-row');
 }
 
 /**

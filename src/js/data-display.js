@@ -237,6 +237,12 @@ function displayData(data) {
     
     const filterTypeSelect = document.createElement('select');
     filterTypeSelect.id = 'filter-type';
+
+    // Check localStorage for previously selected filter column and type
+    const storedFilterColumn = localStorage.getItem('filter-column');
+    const storedFilterType = localStorage.getItem('filter-type');
+    if (storedFilterColumn !== null) selectColumn.value = storedFilterColumn;
+    if (storedFilterType !== null) filterTypeSelect.value = storedFilterType;
     
     ['Is Empty', 'Is Not Empty'].forEach(type => {
         const option = document.createElement('option');
@@ -244,6 +250,7 @@ function displayData(data) {
         option.textContent = type;
         filterTypeSelect.appendChild(option);
     });
+    filterTypeSelect.value = 'is-not-empty'; // Set default here
     
     const applyFilterButton = document.createElement('button');
     applyFilterButton.textContent = 'Apply Filter';
@@ -289,6 +296,12 @@ function displayData(data) {
     endRowInput.placeholder = 'To';
     endRowInput.style.width = '70px';
 
+    // Check localStorage for previously selected row range
+    const storedStartRow = localStorage.getItem('start-row');
+    const storedEndRow = localStorage.getItem('end-row');
+    if (storedStartRow !== null) startRowInput.value = storedStartRow;
+    if (storedEndRow !== null) endRowInput.value = storedEndRow;
+
     const applyRangeButton = document.createElement('button');
     applyRangeButton.textContent = 'Apply Range';
     applyRangeButton.type = 'button';
@@ -327,6 +340,7 @@ function displayData(data) {
         }
         
         rowFilterContainer.appendChild(aiActionsDiv);
+
     }
     
     dataTable.appendChild(rowFilterContainer);
@@ -348,6 +362,17 @@ function displayData(data) {
     saveButtonContainer.appendChild(downloadCsvButton);
     dataTable.appendChild(saveButtonContainer);
     dataSection.classList.remove('hidden');
+    
+    setTimeout(() => {
+        if (storedFilterColumn !== null && storedFilterType !== null && window.applyRowFilter) {
+            window.applyRowFilter();
+        }
+        if ((storedStartRow || storedEndRow) && window.applyRowRangeFilter) {
+            window.applyRowRangeFilter();
+        }
+    }, 0);
+    
+    dataTable.appendChild(rowFilterContainer);
 }
 
 /**
@@ -420,3 +445,5 @@ function makeEditable(cell, rowIndex, columnIndex) {
         }
     });
 }
+
+
