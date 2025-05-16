@@ -6,6 +6,13 @@ function displayData(data) {
     const dataSection = document.getElementById('data-section');
     const dataTable = document.getElementById('data-table');
     
+    // Get the actual header row from the sheet
+    const sheetHeader = data[0];
+    // Build an array of indexes for the desired display order
+    const displayOrder = EXPECTED_COLUMNS
+        .map(col => sheetHeader.indexOf(col))
+        .filter(idx => idx !== -1); // Only include columns that exist in the sheet
+    
     // Clear existing table
     dataTable.innerHTML = '';
     
@@ -94,7 +101,8 @@ function displayData(data) {
     const thead = document.createElement('thead');
     const headerRow = document.createElement('tr');
     
-    data[0].forEach((headerText, index) => {
+    displayOrder.forEach(index => {
+        const headerText = sheetHeader[index];
         const th = document.createElement('th');
         th.textContent = headerText;
         th.dataset.columnIndex = index;
@@ -119,7 +127,7 @@ function displayData(data) {
         // Use the header row length to determine the number of columns
         const numColumns = data[0].length;
 
-        for (let index = 0; index < numColumns; index++) {
+        displayOrder.forEach(index => {
             const td = document.createElement('td');
             // Check if the cell data exists, otherwise use empty string
             let cellText = data[i][index] || '';
@@ -185,7 +193,7 @@ function displayData(data) {
             // Always show the [sound:filename.mp3] tag as text
             td.appendChild(document.createTextNode(cellText));
             row.appendChild(td);
-        }
+        });
         
         tbody.appendChild(row);
     }
@@ -202,7 +210,8 @@ function displayData(data) {
     const selectColumn = document.createElement('select');
     selectColumn.id = 'filter-column';
     
-    data[0].forEach((header, index) => {
+    displayOrder.forEach(index => {
+        const header = sheetHeader[index];
         const option = document.createElement('option');
         option.value = index;
         option.textContent = header;

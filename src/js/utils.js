@@ -17,20 +17,20 @@ const EXPECTED_COLUMNS = [
     'Translation',
     'Sentence_01_zh',
     'Sentence_01_py',
+    'Sentence_01_audio',
     'Sentence_01_en',
     'Sentence_02_zh',
     'Sentence_02_py',
+    'Sentence_02_audio',
     'Sentence_02_en',
-    'Hanzis',
-    'Sentence_01_audio',
-    'Sentence_02_audio'
+    'Hanzis'
 ];
 
 // Column groupings for related functionality
 const COLUMN_GROUPS = {
     basic: ['Word', 'Pronunciation', 'Translation', 'Hanzis'],
-    sentence1: ['Sentence_01_zh', 'Sentence_01_py', 'Sentence_01_en', 'Sentence_01_audio'],
-    sentence2: ['Sentence_02_zh', 'Sentence_02_py', 'Sentence_02_en', 'Sentence_02_audio']
+    sentence1: ['Sentence_01_zh', 'Sentence_01_py', 'Sentence_01_audio','Sentence_01_en'],
+    sentence2: ['Sentence_02_zh', 'Sentence_02_py', 'Sentence_02_audio', 'Sentence_02_en']
 };
 
 /**
