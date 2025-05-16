@@ -28,6 +28,7 @@
         const model = document.getElementById('tts-model').value.trim();
         const voice = document.getElementById('tts-voice').value.trim();
         const instructions = document.getElementById('tts-instructions').value.trim();
+        const prefix = document.getElementById('tts-prefix') ? document.getElementById('tts-prefix').value.trim() : 'zh01_';
         if (!model || !voice) {
             alert('Please specify both TTS model and voice.');
             return;
@@ -63,7 +64,7 @@
                 // Sentence 1
                 const text1 = row[idxSentence1];
                 if (text1) {
-                    const filename1 = makeAudioFilename(row[idxEnglish], 1);
+                    const filename1 = makeAudioFilename(row[idxEnglish], 1, prefix);
                     const mp3Blob1 = await generateTTS(text1, model, voice, instructions);
                     mp3Files.push({filename: filename1, blob: mp3Blob1});
                     row[idxAudio1] = `[sound:${filename1}]`;
@@ -71,7 +72,7 @@
                 // Sentence 2
                 const text2 = row[idxSentence2];
                 if (text2) {
-                    const filename2 = makeAudioFilename(row[idxEnglish], 2);
+                    const filename2 = makeAudioFilename(row[idxEnglish], 2, prefix);
                     const mp3Blob2 = await generateTTS(text2, model, voice, instructions);
                     mp3Files.push({filename: filename2, blob: mp3Blob2});
                     row[idxAudio2] = `[sound:${filename2}]`;
@@ -99,10 +100,10 @@
         return visible;
     }
 
-    function makeAudioFilename(english, which) {
+    function makeAudioFilename(english, which, prefix = '') {
         const base = (english || 'audio').replace(/[^a-zA-Z0-9]+/g, '_').slice(0, 30);
         const rand = Math.floor(Math.random() * 90000 + 10000);
-        return `${base}_s${which}_${rand}.mp3`;
+        return `${prefix}${prefix ? '_' : ''}${base}_s${which}_${rand}.mp3`;
     }
 
     async function generateTTS(text, model, voice, instructions) {
