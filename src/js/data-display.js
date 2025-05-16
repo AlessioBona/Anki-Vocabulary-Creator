@@ -101,6 +101,13 @@ function displayData(data) {
     const thead = document.createElement('thead');
     const headerRow = document.createElement('tr');
     
+    // Add row number header before other headers
+    const rowNumberHeader = document.createElement('th');
+    rowNumberHeader.textContent = '#';
+    rowNumberHeader.className = 'row-number-header';
+    rowNumberHeader.style.width = '40px'; // Make it narrow
+    headerRow.appendChild(rowNumberHeader);
+    
     displayOrder.forEach(index => {
         const headerText = sheetHeader[index];
         const th = document.createElement('th');
@@ -124,9 +131,19 @@ function displayData(data) {
     
     for (let i = 1; i < data.length; i++) {
         const row = document.createElement('tr');
-        // Use the header row length to determine the number of columns
-        const numColumns = data[0].length;
-
+        
+        // Add row number cell first
+        const rowNumberCell = document.createElement('td');
+        rowNumberCell.textContent = i; // 1-based row number (matches data structure)
+        rowNumberCell.className = 'row-number';
+        rowNumberCell.style.backgroundColor = '#2a2a2a';
+        rowNumberCell.style.color = '#aaa';
+        rowNumberCell.style.textAlign = 'center';
+        rowNumberCell.style.fontWeight = 'bold';
+        rowNumberCell.style.userSelect = 'none'; // Prevent selection for better usability
+        row.appendChild(rowNumberCell);
+        
+        // Continue with your existing row cells
         displayOrder.forEach(index => {
             const td = document.createElement('td');
             // Check if the cell data exists, otherwise use empty string
@@ -343,7 +360,10 @@ function toggleColumnVisibility(columnIndex, visible) {
     const cells = table.querySelectorAll(`th[data-column-index="${columnIndex}"], td[data-column-index="${columnIndex}"]`);
     
     cells.forEach(cell => {
-        cell.style.display = visible ? '' : 'none';
+        // Skip row number cells
+        if (!cell.classList.contains('row-number')) {
+            cell.style.display = visible ? '' : 'none';
+        }
     });
 }
 

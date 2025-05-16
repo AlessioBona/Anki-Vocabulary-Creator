@@ -757,221 +757,6 @@ textarea:focus {
     100% { transform: scale(1); }
 }
 
-.animate-pulse {
-    animation: pulse 1.5s infinite;
-}
-
-/* Enhanced layout and header styling */
-body {
-    min-height: 100vh;
-    background-color: #121212;
-    background-image: linear-gradient(to bottom, #1a1a1a, #121212);
-    padding-bottom: 40px;
-}
-
-.container {
-    margin: 0 auto;
-    padding: 0 20px;
-}
-
-h1 {
-    position: relative;
-    font-size: 2.5rem;
-    padding: 20px 0;
-    margin-bottom: 30px;
-    text-align: center;
-    background: linear-gradient(45deg, #4285f4, #0f9d58, #f4b400, #db4437);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    letter-spacing: 1px;
-}
-
-h1::after {
-    content: "";
-    position: absolute;
-    bottom: 12px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 180px;
-    height: 3px;
-    background: linear-gradient(45deg, #4285f4, #0f9d58, #f4b400, #db4437);
-    border-radius: 3px;
-}
-
-/* Section styling */
-#auth-section, #sheet-section, #data-section {
-    background-color: #1e1e1e;
-    border-radius: 8px;
-    padding: 25px;
-    margin-bottom: 30px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    border: 1px solid #333;
-    animation: fadeIn 0.5s ease-out forwards;
-}
-
-/* Card styling for all major components */
-.card {
-    background-color: #252525;
-    border-radius: 8px;
-    padding: 20px;
-    margin: 15px 0;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-    border: 1px solid #333;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    animation: fadeIn 0.5s ease-out forwards;
-}
-
-.card:hover {
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-    transform: translateY(-2px);
-}
-
-/* Card content styling */
-.card-content {
-    padding: 15px 0 5px;
-}
-
-/* Input group styling */
-.input-group {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 15px;
-}
-
-.input-group input,
-.input-group select {
-    flex: 1;
-    margin-bottom: 0;
-}
-
-.input-group button {
-    white-space: nowrap;
-}
-
-/* Icon styling */
-h2 i, h3 i {
-    margin-right: 10px;
-    color: #4285f4;
-}
-
-.ai-tool-card h3 i {
-    color: #9c27b0;
-}
-
-/* Status badge styling */
-.status-badge {
-    display: inline-block;
-    padding: 8px 12px;
-    background-color: #333;
-    border-radius: 4px;
-    margin-top: 15px;
-    color: #e0e0e0;
-    font-size: 14px;
-}
-
-.status-badge i {
-    margin-right: 6px;
-    color: #4285f4;
-}
-
-/* Card styling for all major components */
-.card {
-    background-color: #252525;
-    border-radius: 8px;
-    padding: 20px;
-    margin: 15px 0;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-    border: 1px solid #333;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.card:hover {
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-    transform: translateY(-2px);
-}
-
-/* Card content styling */
-.card-content {
-    padding: 15px 0 5px;
-}
-
-/* Input group styling */
-.input-group {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 15px;
-}
-
-.input-group input,
-.input-group select {
-    flex: 1;
-    margin-bottom: 0;
-}
-
-.input-group button {
-    white-space: nowrap;
-}
-
-/* Icon styling */
-h2 i, h3 i {
-    margin-right: 10px;
-    color: #4285f4;
-}
-
-.ai-tool-card h3 i {
-    color: #9c27b0;
-}
-
-button i {
-    margin-right: 8px;
-}
-
-/* Status badge styling */
-.status-badge {
-    display: inline-block;
-    padding: 8px 12px;
-    background-color: #333;
-    border-radius: 4px;
-    margin-top: 15px;
-    color: #e0e0e0;
-    font-size: 14px;
-}
-
-.status-badge i {
-    margin-right: 6px;
-    color: #4285f4;
-}
-
-/* Update font family for the whole app */
-body {
-    font-family: 'Inter', 'Segoe UI', 'Roboto', sans-serif;
-}
-
-/* Replace empty td with a subtle indicator */
-td:empty::before {
-    content: "—";
-    color: #666;
-    opacity: 0.7;
-}
-
-/* Animations */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes slideIn {
-    from { transform: translateX(-20px); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-}
-
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
-}
-
 @keyframes glow {
     0% { box-shadow: 0 0 5px rgba(66, 133, 244, 0.5); }
     50% { box-shadow: 0 0 20px rgba(66, 133, 244, 0.8); }
@@ -1161,4 +946,31 @@ td:focus-within {
 
 .footer a:hover {
     text-decoration: underline;
+}
+
+/* Row number styling */
+.row-number-header, .row-number {
+    position: sticky;
+    left: 0;
+    z-index: 5;
+    box-shadow: 2px 0 3px rgba(0,0,0,0.1);
+}
+
+.row-number {
+    background-color: #2a2a2a !important;
+    border-right: 2px solid #333;
+    font-size: 0.85rem;
+    min-width: 40px;
+}
+
+.row-number-header {
+    background-color: #2a2a2a;
+    border-right: 2px solid #333;
+}
+
+/* Make sure the row-number cells don't get colored by column group styles */
+td.row-number.group-basic,
+td.row-number.group-sentence1,
+td.row-number.group-sentence2 {
+    background-color: #2a2a2a !important;
 }

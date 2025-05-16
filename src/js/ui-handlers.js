@@ -239,7 +239,6 @@ function applyRowRangeFilter() {
                 cellText = cellText.trim();
             }
             const isEmpty = !cellText;
-            
             hiddenByColumnFilter = (filterType === 'is-empty' && !isEmpty) || 
                                   (filterType === 'is-not-empty' && isEmpty);
         }
@@ -479,5 +478,6 @@ async function runSpeechGeneration() {
         showError(`Error generating audio: ${error.message}`);
     }
 }
+
 
 window.applyRowRangeFilter = applyRowRangeFilter;
